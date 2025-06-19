@@ -6,7 +6,7 @@ const Admin = require('./models/Admin');
 const User = require('./models/User');
 const Office = require('./models/Office');
 const BusinessUnit = require('./models/BusinessUnit');
-const SuperAdmin = require('./models/superAdmin');
+const SuperAdmin = require('./models/SuperAdmin');
 
 dotenv.config();
 
