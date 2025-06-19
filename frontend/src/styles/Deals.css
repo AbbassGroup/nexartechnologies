@@ -1,0 +1,349 @@
+/* --- Deals Page Styles --- */
+.deals-container {
+  background: #f7fafd;
+  height: 100%;
+  padding: 34px 0;
+ 
+}
+
+.deals-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 10px;
+}
+
+.deals-header h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.deals-filters {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.filter-select {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1.5px solid #e0e4ea;
+  background: #fff;
+  font-size: 1rem;
+  color: #333;
+  min-width: 180px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #1976d2;
+}
+
+.create-deal-btn {
+  padding: 8px 20px;
+  background: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.create-deal-btn:hover {
+  background: #1565c0;
+}
+
+/* Kanban Board Styles */
+.kanban-board {
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 16px;
+}
+
+.kanban-row {
+  display: flex;
+  gap: 16px;
+  min-width: max-content;
+  padding: 8px 4px;
+}
+
+.kanban-column {
+  background: #f7fafd;
+  border-radius: 12px;
+  min-width: 280px;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px rgba(60, 60, 120, 0.06);
+}
+
+.kanban-column-header {
+  padding: 16px;
+  background: #fff;
+  border-radius: 12px 12px 0 0;
+  border-bottom: 1px solid #e0e4ea;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.kanban-stage-title {
+  font-weight: 600;
+  color: #1976d2;
+  font-size: 1.1rem;
+}
+
+.deal-count {
+  color: #666;
+  font-size: 0.9rem;
+  background: #f0f4f8;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.kanban-cards {
+  padding: 12px;
+  min-height: 100px;
+  flex: 1;
+  background: #f7fafd;
+  border-radius: 0 0 12px 12px;
+}
+
+.deal-card {
+  background: white;
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  position: relative;
+  cursor: grab;
+}
+
+.deal-card.draggable {
+  border-bottom: 3px solid #4CAF50; /* Green color for draggable cards */
+}
+
+.deal-card.non-draggable {
+  border-bottom: 3px solid #FF9800; /* Orange color for non-draggable cards */
+  cursor: not-allowed;
+}
+
+.deal-card:hover {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.deal-card h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.deal-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #666;
+}
+
+.deal-owner, .deal-office {
+  display: inline-block;
+}
+
+/* Add tooltip for non-draggable cards */
+.deal-card.non-draggable::after {
+  content: "Cannot drag this deal";
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.deal-card.non-draggable:hover::after {
+  opacity: 1;
+}
+
+.deal-owner {
+  color: #1976d2;
+  font-weight: 500;
+}
+
+.deal-office {
+  color: #666;
+}
+
+.deals-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.error-message {
+  background: #ffebee;
+  color: #d32f2f;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+}
+
+/* Responsive Styles */
+@media (max-width: 1200px) {
+  .deals-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .deals-filters {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  
+  .filter-select {
+    flex: 1;
+    min-width: 150px;
+  }
+  
+  .create-deal-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .deals-container {
+    padding: 16px;
+  }
+  
+  .kanban-column {
+    min-width: 240px;
+  }
+  
+  .deal-card {
+    padding: 12px;
+  }
+  
+  .deal-card h4 {
+    font-size: 1rem;
+  }
+}
+
+.deals-unit-select-group {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.deals-office-select {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.deals-unit-select {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.deals-unit-select label {
+  font-weight: 500;
+  color: #333;
+  font-size: 1rem;
+}
+
+.deals-unit-select select {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1.5px solid #e0e4ea;
+  font-size: 1rem;
+  background: #f8fafd;
+  color: #222;
+  transition: border 0.2s;
+}
+
+.deals-unit-select select:focus {
+  border-color: #1976d2;
+  outline: none;
+}
+
+.deals-pipelines-section {
+  margin-top: 12px;
+}
+
+.deals-loading, .deals-empty {
+  text-align: center;
+  color: #888;
+  font-size: 1.1rem;
+  margin: 32px 0;
+}
+
+.deal-card.dragging {
+  background: #e3f2fd;
+  box-shadow: 0 8px 32px rgba(25, 118, 210, 0.22);
+  border-color: #1976d2;
+  transform: scale(1.04) rotate(-2deg);
+  z-index: 10;
+}
+
+.kanban-column.dragging-over {
+  background: #e3f2fd;
+  transition: background 0.22s cubic-bezier(0.4,0,0.2,1);
+}
+
+.deal-title {
+  font-weight: 600;
+  color: #1976d2;
+  font-size: 1.05rem;
+}
+
+.deal-owner {
+  font-size: 0.95rem;
+  color: #555;
+}
+
+@media (max-width: 900px) {
+  .deal-card {
+    min-width: 90px;
+    min-height: 90px;
+    max-width: 140px;
+    padding: 16px 8px;
+    font-size: 1rem;
+  }
+}
+
+.create-deal-btn {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 22px;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-left: 10px;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+}
+
+.create-deal-btn:hover {
+  background: #1251a3;
+  transform: translateY(-1px) scale(1.03);
+} 
