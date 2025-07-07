@@ -59,7 +59,7 @@ const Login = () => {
   return (
     <div className="login-page-wrapper">
       <form className="login-form" onSubmit={handleSubmit}>
-        <div className='crm-name'>NEXAR</div>
+        <div className='crm-name'>NEXARRR</div>
         <p>Sign in to your account</p>
         {error && <div className="error-message">{error}</div>}
         <input
