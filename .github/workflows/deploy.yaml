@@ -1,0 +1,40 @@
+name: Auto Deploy Nexar on Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy via SSH
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Connect and deploy on server
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            echo "🔄 Pulling latest code..."
+            cd /var/www/nexartechnologies
+            git reset --hard origin/main
+            git pull origin main
+
+            echo "📦 Installing backend dependencies..."
+            cd /var/www/nexartechnologies/backend
+            npm install
+
+            echo "🚀 Restarting backend with PM2..."
+            pm2 start server.js --name nexar-backend
+
+            echo "📦 Installing frontend dependencies..."
+            cd /var/www/nexartechnologies/frontend
+            npm install
+
+            echo "⚙️ Building frontend..."
+            npm run build
+
+            echo "✅ Deployment complete."
