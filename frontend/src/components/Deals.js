@@ -24,7 +24,7 @@ const PIPELINES = {
     'Enquiry', 'Qualification', 'Awaiting Documents', 'Assessing servicability', 'Serviceability provided to client', 'Loan application processing',
     'Pre-Approval', 'Contract signed', 'Unconditional loan', 'Settled', 'Nurture', 'DNQ', 'Closed Lost', 'FLUP', 'CLOSED. Do Not Contact'
   ],
-  'Business Broker': [
+  'Business Brokers': [
     'Enquiry', 'Initial Consultation', 'Proposal sent', 'Backlog for FLUP', 'Engagement Signed', 'Ad launch', 'Under offer', 'Settled, Invoice paid',
     'Nurture', 'DNQ', 'Closed Lost', 'CLOSED. Do Not Contact'
   ]

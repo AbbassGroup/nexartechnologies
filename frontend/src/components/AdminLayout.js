@@ -32,11 +32,7 @@ const AdminLayout = () => {
                 </NavLink>
               </li>
             )}
-            {/* <li>
-              <NavLink to="/admin-dashboard/leads" className={({ isActive }) => isActive ? 'active' : ''}>
-                Leads
-              </NavLink>
-            </li> */}
+           
             <li>
               <NavLink to="/admin-dashboard/contacts" className={({ isActive }) => isActive ? 'active' : ''}>
                 Contacts

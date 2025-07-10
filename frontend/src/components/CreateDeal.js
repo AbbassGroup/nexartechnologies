@@ -75,6 +75,7 @@ const CreateDeal = () => {
     office: ''
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
   const [businessUnits, setBusinessUnits] = useState([]);
   const [offices, setOffices] = useState([]);
@@ -99,6 +100,7 @@ const CreateDeal = () => {
         }));
       }
     } catch (error) {
+      console.error('Error fetching business units:', error);
       setBusinessUnits([]);
     }
   };
@@ -113,6 +115,7 @@ const CreateDeal = () => {
         setForm(prev => ({ ...prev, office: data.data[0].name }));
       }
     } catch (error) {
+      console.error('Error fetching offices:', error);
       setOffices([]);
     }
   };
@@ -123,8 +126,8 @@ const CreateDeal = () => {
       ...prev,
       [name]: value,
       ...(name === 'businessUnit' ? { 
-        stage: user.role === 'manager' 
-          ? PIPELINES[user.businessUnits[0]]?.[0] || ''
+        stage: user?.role === 'manager' 
+          ? PIPELINES[user.businessUnits?.[0]]?.[0] || ''
           : PIPELINES[value]?.[0] || '' 
       } : {})
     }));
@@ -133,30 +136,73 @@ const CreateDeal = () => {
   const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
+    setError('');
+    
     try {
+      // Validate required fields
+      if (!form.name.trim()) {
+        throw new Error('Deal name is required');
+      }
+      
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
       const payload = {
         ...form,
         owner: user.name,
+        // Convert numeric fields
+        probability: Number(form.probability) || 0,
+        // Ensure required fields are not empty strings
+        name: form.name.trim(),
+        businessUnit: form.businessUnit || businessUnits[0]?.name || '',
+        stage: form.stage || '',
+        office: form.office || offices[0]?.name || ''
       };
+
+      console.log('Submitting payload:', payload); // Debug log
+
       const response = await fetch(`${API_BASE_URL}/api/deals`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          // Add authorization header if available
+          ...(user.token && { 'Authorization': `Bearer ${user.token}` })
+        },
         body: JSON.stringify(payload)
       });
+
       if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
         if (response.status === 401) {
-          // Optionally show a message or handle auth
-          return;
+          throw new Error('Authentication failed. Please log in again.');
         }
-        throw new Error('Failed to create deal');
+        throw new Error(errorData.message || `Server error: ${response.status}`);
       }
+
+      const result = await response.json();
+      console.log('Deal created successfully:', result);
       navigate('/admin-dashboard/deals');
     } catch (error) {
-      // Optionally show error
+      console.error('Error creating deal:', error);
+      setError(error.message || 'Failed to create deal. Please try again.');
     } finally {
       setLoading(false);
     }
   };
+
+  // Show loading state if user is not loaded yet
+  if (!user) {
+    return (
+      <div className="create-deal-bg">
+        <div className="deals-container">
+          <div className="deals-header">
+            <h2 className="create-deal-title">Loading...</h2>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="create-deal-bg">
@@ -164,6 +210,20 @@ const CreateDeal = () => {
         <div className="deals-header">
           <h2 className="create-deal-title">Create New Deal</h2>
         </div>
+        
+        {error && (
+          <div className="error-message" style={{ 
+            color: 'red', 
+            padding: '10px', 
+            marginBottom: '20px', 
+            border: '1px solid red', 
+            borderRadius: '4px',
+            backgroundColor: '#ffebee'
+          }}>
+            {error}
+          </div>
+        )}
+        
         <form className="deal-form deal-form-grid" onSubmit={handleSubmit}>
           {/* Left Column */}
           <div className="deal-form-col">
@@ -174,8 +234,15 @@ const CreateDeal = () => {
               </select>
             </div>
             <div className="form-group-row">
-              <label>Deal Name</label>
-              <input type="text" name="name" value={form.name} onChange={handleChange} required />
+              <label>Deal Name *</label>
+              <input 
+                type="text" 
+                name="name" 
+                value={form.name} 
+                onChange={handleChange} 
+                required 
+                placeholder="Enter deal name"
+              />
             </div>
             <div className="form-group-row">
               <label>Account Name</label>
@@ -277,9 +344,11 @@ const CreateDeal = () => {
                 onChange={handleChange}
                 disabled={user.role === 'manager'}
               >
-                {user.role === 'manager'
+                {businessUnits.length === 0 ? (
+                  <option value="">Loading...</option>
+                ) : user.role === 'manager'
                   ? businessUnits
-                      .filter(unit => user.businessUnits.includes(unit.name))
+                      .filter(unit => user.businessUnits?.includes(unit.name))
                       .map(unit => (
                         <option key={unit._id} value={unit.name}>{unit.name}</option>
                       ))
@@ -297,15 +366,22 @@ const CreateDeal = () => {
                 onChange={handleChange}
               >
                 {(user.role === 'manager'
-                  ? PIPELINES[user.businessUnits[0]]
+                  ? PIPELINES[user.businessUnits?.[0]]
                   : PIPELINES[form.businessUnit])?.map(stage => (
                   <option key={stage} value={stage}>{stage}</option>
-                ))}
+                )) || <option value="">Select business unit first</option>}
               </select>
             </div>
             <div className="form-group-row">
               <label>Probability (%)</label>
-              <input type="number" name="probability" value={form.probability} onChange={handleChange} min="0" max="100" />
+              <input 
+                type="number" 
+                name="probability" 
+                value={form.probability} 
+                onChange={handleChange} 
+                min="0" 
+                max="100" 
+              />
             </div>
             <div className="form-group-row">
               <label>Expected Revenue</label>
@@ -334,14 +410,18 @@ const CreateDeal = () => {
             <div className="form-group-row">
               <label>Office Location</label>
               <select name="office" value={form.office} onChange={handleChange}>
-                {offices.map(office => (
+                {offices.length === 0 ? (
+                  <option value="">Loading...</option>
+                ) : offices.map(office => (
                   <option key={office._id} value={office.name}>{office.name}</option>
                 ))}
               </select>
             </div>
           </div>
           <div className="form-actions" style={{ gridColumn: '1 / -1' }}>
-            <button type="button" className="cancel-btn" onClick={() => navigate('/admin-dashboard/deals')}>Cancel</button>
+            <button type="button" className="cancel-btn" onClick={() => navigate('/admin-dashboard/deals')}>
+              Cancel
+            </button>
             <button type="submit" className="submit-btn" disabled={loading}>
               {loading ? 'Creating...' : 'Create Deal'}
             </button>
