@@ -27,6 +27,9 @@ const PIPELINES = {
   'Business Brokers': [
     'Enquiry', 'Initial Consultation', 'Proposal sent', 'Backlog for FLUP', 'Engagement Signed', 'Ad launch', 'Under offer', 'Settled, Invoice paid',
     'Nurture', 'DNQ', 'Closed Lost', 'CLOSED. Do Not Contact'
+  ],
+  'ABBASS Group': [
+    'Enquiry', 'Initial Call', 'Interview 1', 'Interview 2', 'Offer', 'Contract Signed', 'Onboarded'
   ]
 };
 
@@ -205,7 +208,7 @@ const Deals = () => {
           </select>
           <button 
             className="create-deal-btn"
-            onClick={() => navigate(`/deals/create?businessUnit=${encodeURIComponent(selectedUnit)}`)}
+            onClick={() => navigate('/deals/create')}
           >
             Create Deal
           </button>
