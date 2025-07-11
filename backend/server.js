@@ -8,6 +8,7 @@ const Office = require('./models/Office');
 const BusinessUnit = require('./models/BusinessUnit');
 const SuperAdmin = require('./models/SuperAdmin');
 const Deal = require('./models/Deals');
+const Contact = require('./models/Contact');
 
 dotenv.config();
 
@@ -853,6 +854,54 @@ app.delete('/api/deals/:id', authenticateUser, async (req, res) => {
             details: error.message,
             stack: error.stack 
         });
+    }
+});
+
+// ----------- CONTACTS ROUTES -----------
+app.post('/api/contacts', async (req, res) => {
+    try {
+        const {
+            firstName,
+            lastName,
+            phone,
+            email,
+            industry,
+            businessType,
+            priceRange,
+            location,
+            city,
+            contactOwner
+        } = req.body;
+
+        if (!firstName || !lastName || !phone || !email) {
+            return res.status(400).json({ success: false, error: 'Missing required fields' });
+        }
+
+        const newContact = new Contact({
+            firstName,
+            lastName,
+            phone,
+            email,
+            industry,
+            businessType,
+            priceRange,
+            location,
+            city,
+            contactOwner
+        });
+        await newContact.save();
+        res.status(201).json({ success: true, message: 'Contact created successfully', data: newContact });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.get('/api/contacts', async (req, res) => {
+    try {
+        const contacts = await Contact.find();
+        res.json({ success: true, data: contacts });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 

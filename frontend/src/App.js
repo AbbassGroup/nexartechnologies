@@ -11,6 +11,8 @@ import './App.css';
 import CreateDeal from './components/CreateDeal';
 import BusinessSetting from './components/BusinessSetting';
 import ForgetPassword from './components/ForgetPassword';
+import Contacts from './components/Contacts';
+import CreateContact from './components/CreateContact';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, requiredRole }) => {
@@ -49,8 +51,8 @@ function App() {
                   <Users />
                 </ProtectedRoute>
               } />
-              <Route path="leads" element={<div>Leads Page (Coming Soon)</div>} />
-              <Route path="contacts" element={<div>Contacts Page (Coming Soon)</div>} />
+              <Route path="contacts" element={<Contacts/>} />
+              <Route path="contacts/create" element={<CreateContact />} />
               <Route path="deals" element={<Deals />} />
               <Route path="settings" element={<div>Settings Page (Coming Soon)</div>} />
               <Route path="business-setting" element={
