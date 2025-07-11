@@ -85,14 +85,36 @@ const CreateDeal = () => {
     fetchOffices();
   }, []);
 
+  // Update stage when business unit changes
+  useEffect(() => {
+    if (form.businessUnit && PIPELINES[form.businessUnit]) {
+      setForm(prev => ({
+        ...prev,
+        stage: PIPELINES[form.businessUnit][0]
+      }));
+    }
+  }, [form.businessUnit]);
+
   const fetchBusinessUnits = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/business-units`);
       const data = await response.json();
       setBusinessUnits(data.data || []);
-      // Set default business unit in form if not already set
-      if (data.data && data.data.length > 0 && !form.businessUnit) {
-        const defaultUnit = data.data[0].name;
+      
+      // Set default business unit based on user role
+      if (data.data && data.data.length > 0) {
+        let defaultUnit;
+        
+        if (user.role === 'manager' || user.role === 'user') {
+          // For managers/users, use their first assigned business unit
+          const userBusinessUnits = user.businessUnits || [];
+          defaultUnit = data.data.find(unit => userBusinessUnits.includes(unit.name))?.name || data.data[0].name;
+        } else {
+          // For admin/super admin, use the first available business unit
+          defaultUnit = data.data[0].name;
+        }
+        
+        // Set default business unit and stage
         setForm(prev => ({ 
           ...prev, 
           businessUnit: defaultUnit,
@@ -110,7 +132,8 @@ const CreateDeal = () => {
       const response = await fetch(`${API_BASE_URL}/api/offices`);
       const data = await response.json();
       setOffices(data.data || []);
-      // Set default office in form if not already set
+      
+      // Set default office if not already set
       if (data.data && data.data.length > 0 && !form.office) {
         setForm(prev => ({ ...prev, office: data.data[0].name }));
       }
@@ -126,9 +149,7 @@ const CreateDeal = () => {
       ...prev,
       [name]: value,
       ...(name === 'businessUnit' ? { 
-        stage: user?.role === 'manager' 
-          ? PIPELINES[user.businessUnits?.[0]]?.[0] || ''
-          : PIPELINES[value]?.[0] || '' 
+        stage: PIPELINES[value]?.[0] || '' 
       } : {})
     }));
   };
@@ -153,10 +174,12 @@ const CreateDeal = () => {
         owner: user.name,
         // Convert numeric fields
         probability: Number(form.probability) || 0,
-        // Ensure required fields are not empty strings
+        // Ensure required fields are not empty strings and set defaults
         name: form.name.trim(),
-        businessUnit: form.businessUnit || businessUnits[0]?.name || '',
-        stage: form.stage || '',
+        businessUnit: form.businessUnit || (user.role === 'manager' || user.role === 'user' 
+          ? user.businessUnits?.[0] || businessUnits[0]?.name || ''
+          : businessUnits[0]?.name || ''),
+        stage: form.stage || PIPELINES[form.businessUnit]?.[0] || PIPELINES[businessUnits[0]?.name]?.[0] || '',
         office: form.office || offices[0]?.name || ''
       };
 
@@ -342,11 +365,11 @@ const CreateDeal = () => {
                 name="businessUnit" 
                 value={form.businessUnit} 
                 onChange={handleChange}
-                disabled={user.role === 'manager'}
+                disabled={user.role === 'manager' || user.role === 'user'}
               >
                 {businessUnits.length === 0 ? (
                   <option value="">Loading...</option>
-                ) : user.role === 'manager'
+                ) : (user.role === 'manager' || user.role === 'user')
                   ? businessUnits
                       .filter(unit => user.businessUnits?.includes(unit.name))
                       .map(unit => (
@@ -365,9 +388,7 @@ const CreateDeal = () => {
                 value={form.stage} 
                 onChange={handleChange}
               >
-                {(user.role === 'manager'
-                  ? PIPELINES[user.businessUnits?.[0]]
-                  : PIPELINES[form.businessUnit])?.map(stage => (
+                {PIPELINES[form.businessUnit]?.map(stage => (
                   <option key={stage} value={stage}>{stage}</option>
                 )) || <option value="">Select business unit first</option>}
               </select>
