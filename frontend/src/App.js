@@ -11,6 +11,8 @@ import './App.css';
 import CreateDeal from './components/CreateDeal';
 import BusinessSetting from './components/BusinessSetting';
 import ForgetPassword from './components/ForgetPassword';
+import Contacts from './components/Contacts';
+import CreateContact from './components/CreateContact';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, requiredRole }) => {
@@ -25,6 +27,42 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   }
 
   if (requiredRole && !hasPermission(requiredRole)) {
+    return <Navigate to="/admin-dashboard" replace />;
+  }
+
+  return children;
+};
+
+// Protected Prospects Route Component
+const ProtectedProspectsRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/" replace />;
+  }
+
+  // Check if user can access Prospects
+  const canAccessProspects = () => {
+    if (!user) return false;
+    
+    // Super admin and admin can always access
+    if (user.role === 'super_admin' || user.role === 'admin') {
+      return true;
+    }
+    
+    // Managers can only access if they belong to Business Brokers business unit
+    if (user.role === 'manager') {
+      return user.businessUnits && user.businessUnits.includes('Business Brokers');
+    }
+    
+    return false;
+  };
+
+  if (!canAccessProspects()) {
     return <Navigate to="/admin-dashboard" replace />;
   }
 
@@ -49,8 +87,16 @@ function App() {
                   <Users />
                 </ProtectedRoute>
               } />
-              <Route path="leads" element={<div>Leads Page (Coming Soon)</div>} />
-              <Route path="contacts" element={<div>Contacts Page (Coming Soon)</div>} />
+              <Route path="prospects" element={
+                <ProtectedProspectsRoute>
+                  <Contacts/>
+                </ProtectedProspectsRoute>
+              } />
+              <Route path="prospects/create" element={
+                <ProtectedProspectsRoute>
+                  <CreateContact />
+                </ProtectedProspectsRoute>
+              } />
               <Route path="deals" element={<Deals />} />
               <Route path="settings" element={<div>Settings Page (Coming Soon)</div>} />
               <Route path="business-setting" element={

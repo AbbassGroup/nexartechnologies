@@ -1,0 +1,16 @@
+# Ignore Windows command and PowerShell scripts
+*.cmd
+*.ps1
+
+# Ignore xlsx CLI tool files (if any)
+xlsx
+xlsx.cmd
+xlsx.ps1
+
+# Ignore Excel files
+*.xlsx
+*.xls
+
+# Node modules and environment
+node_modules/
+.env 

@@ -138,10 +138,69 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-.deal-card h4 {
-  margin: 0 0 8px 0;
+/* Deal Card Header with Actions */
+.deal-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.deal-card-header h4 {
+  margin: 0;
   font-size: 14px;
   color: #333;
+  flex: 1;
+  padding-right: 8px;
+}
+
+.deal-card-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.edit-deal-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  opacity: 0.7;
+}
+
+.edit-deal-btn:hover {
+  opacity: 1;
+  background: rgba(25, 118, 210, 0.1);
+  transform: scale(1.1);
+}
+
+.edit-deal-btn:active {
+  transform: scale(0.95);
+}
+
+.delete-deal-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 2px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.delete-deal-btn:hover {
+  opacity: 1;
+  background: rgba(244, 67, 54, 0.1);
+  transform: scale(1.1);
+}
+
+.delete-deal-btn:active {
+  transform: scale(0.95);
 }
 
 .deal-details {
@@ -149,10 +208,33 @@
   justify-content: space-between;
   font-size: 12px;
   color: #666;
+  margin-bottom: 6px;
 }
 
 .deal-owner, .deal-office {
   display: inline-block;
+}
+
+/* Business Name Display for Business Brokers */
+.deal-business-name {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #666;
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.business-name-label {
+  font-weight: 600;
+  color: #1976d2;
+}
+
+.business-name-value {
+  color: #333;
+  font-weight: 500;
 }
 
 /* Add tooltip for non-draggable cards */
@@ -204,6 +286,269 @@
   font-size: 0.95rem;
 }
 
+/* Delete Confirmation Modal */
+.delete-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.delete-modal {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.delete-modal h3 {
+  margin: 0 0 16px 0;
+  color: #d32f2f;
+  font-size: 1.2rem;
+}
+
+.delete-modal p {
+  margin: 0 0 12px 0;
+  color: #666;
+  line-height: 1.5;
+}
+
+.delete-modal-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  justify-content: flex-end;
+}
+
+.delete-confirm-btn {
+  padding: 8px 16px;
+  background: #d32f2f;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.delete-confirm-btn:hover {
+  background: #c62828;
+}
+
+.delete-cancel-btn {
+  padding: 8px 16px;
+  background: #f5f5f5;
+  color: #666;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.delete-cancel-btn:hover {
+  background: #e0e0e0;
+  border-color: #ccc;
+}
+
+/* Edit Deal Modal */
+.edit-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.edit-modal {
+  background: white;
+  border-radius: 12px;
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.edit-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px 0 24px;
+  border-bottom: 1px solid #e0e4ea;
+  margin-bottom: 20px;
+}
+
+.edit-modal-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.3rem;
+}
+
+.close-modal-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.close-modal-btn:hover {
+  background: #f5f5f5;
+}
+
+.edit-form {
+  padding: 0 24px 24px 24px;
+}
+
+.edit-form-section {
+  margin-bottom: 24px;
+}
+
+.edit-form-section h4 {
+  color: #333;
+  font-size: 1.1rem;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e0e4ea;
+}
+
+.edit-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.edit-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.edit-form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.edit-form-group label {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.edit-form-group input,
+.edit-form-group select,
+.edit-form-group textarea {
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1.5px solid #e0e4ea;
+  font-size: 0.95rem;
+  background: #fff;
+  transition: border 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+.edit-form-group input:focus,
+.edit-form-group select:focus,
+.edit-form-group textarea:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.08);
+}
+
+.edit-form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.edit-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e4ea;
+}
+
+.edit-form-actions .cancel-btn {
+  padding: 10px 20px;
+  border: 1.5px solid #e0e4ea;
+  border-radius: 6px;
+  background: #f5f5f5;
+  color: #555;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.edit-form-actions .cancel-btn:hover {
+  background: #e0e0e0;
+  border-color: #ccc;
+}
+
+.edit-form-actions .submit-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  background: #1976d2;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.edit-form-actions .submit-btn:hover {
+  background: #1565c0;
+}
+
+.edit-form-actions .submit-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* Responsive Design for Edit Modal */
+@media (max-width: 768px) {
+  .edit-modal {
+    margin: 10px;
+    max-height: 95vh;
+  }
+  
+  .edit-form-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .edit-form-actions {
+    flex-direction: column;
+  }
+  
+  .edit-form-actions .cancel-btn,
+  .edit-form-actions .submit-btn {
+    width: 100%;
+  }
+}
+
 /* Responsive Styles */
 @media (max-width: 1200px) {
   .deals-header {
@@ -242,6 +587,20 @@
   
   .deal-card h4 {
     font-size: 1rem;
+  }
+  
+  .delete-modal {
+    margin: 20px;
+    padding: 20px;
+  }
+  
+  .delete-modal-buttons {
+    flex-direction: column;
+  }
+  
+  .delete-confirm-btn,
+  .delete-cancel-btn {
+    width: 100%;
   }
 }
 

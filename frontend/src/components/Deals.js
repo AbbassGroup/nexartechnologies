@@ -24,9 +24,12 @@ const PIPELINES = {
     'Enquiry', 'Qualification', 'Awaiting Documents', 'Assessing servicability', 'Serviceability provided to client', 'Loan application processing',
     'Pre-Approval', 'Contract signed', 'Unconditional loan', 'Settled', 'Nurture', 'DNQ', 'Closed Lost', 'FLUP', 'CLOSED. Do Not Contact'
   ],
-  'Business Broker': [
+  'Business Brokers': [
     'Enquiry', 'Initial Consultation', 'Proposal sent', 'Backlog for FLUP', 'Engagement Signed', 'Ad launch', 'Under offer', 'Settled, Invoice paid',
     'Nurture', 'DNQ', 'Closed Lost', 'CLOSED. Do Not Contact'
+  ],
+  'ABBASS Group': [
+    'Enquiry', 'Initial Call', 'Interview 1', 'Interview 2', 'Offer', 'Contract Signed', 'Onboarded'
   ]
 };
 
@@ -40,6 +43,11 @@ const Deals = () => {
   const [deals, setDeals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState({ show: false, dealId: null, dealName: '' });
+  const [editModal, setEditModal] = useState({ show: false, deal: null });
+  const [editForm, setEditForm] = useState({});
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState('');
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -125,6 +133,23 @@ const Deals = () => {
       return acc;
     }, {}) || {};
 
+  // Check if user can edit a specific deal
+  const canEditDeal = (deal) => {
+    if (!user) return false;
+    
+    // Super admin and admin can edit any deal
+    if (user.role === 'super_admin' || user.role === 'admin') {
+      return true;
+    }
+    
+    // Managers can only edit deals from their office
+    if (user.role === 'manager') {
+      return deal.office === user.office;
+    }
+    
+    return false;
+  };
+
   // Handle drag end and update backend
   const onDragEnd = async (result) => {
     if (!result.destination) return;
@@ -175,6 +200,135 @@ const Deals = () => {
     }
   };
 
+  // Handle deal deletion (super admin only)
+  const handleDeleteDeal = async (dealId) => {
+    if (user.role !== 'super_admin') return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/deals/${dealId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) throw new Error('Failed to delete deal');
+
+      // Remove deal from local state
+      setDeals(prevDeals => prevDeals.filter(deal => deal._id !== dealId));
+      setDeleteConfirm({ show: false, dealId: null, dealName: '' });
+      setError(null);
+    } catch (error) {
+      setError('Failed to delete deal');
+      console.error('Error deleting deal:', error);
+    }
+  };
+
+  // Show delete confirmation dialog
+  const showDeleteConfirm = (dealId, dealName) => {
+    setDeleteConfirm({ show: true, dealId, dealName });
+  };
+
+  // Cancel delete confirmation
+  const cancelDelete = () => {
+    setDeleteConfirm({ show: false, dealId: null, dealName: '' });
+  };
+
+  // Show edit modal
+  const showEditModal = (deal) => {
+    // Check if user can edit this deal
+    if (!canEditDeal(deal)) {
+      setError('You can only edit deals from your office location');
+      return;
+    }
+
+    setEditForm({
+      name: deal.name || '',
+      email: deal.email || '',
+      phone: deal.phone || '',
+      stage: deal.stage || '',
+      office: deal.office || '',
+      owner: deal.owner || '',
+      notes: deal.notes || '',
+      commission: deal.commission || '',
+      businessName: deal.businessName || '',
+      typeOfBusiness: deal.typeOfBusiness || '',
+      sellingConsideration: deal.sellingConsideration || '',
+      lengthOfOperation: deal.lengthOfOperation || '',
+      location: deal.location || '',
+      member: deal.member || 'No',
+      dateCreated: deal.dateCreated || new Date().toISOString().split('T')[0]
+    });
+    setEditModal({ show: true, deal });
+    setEditError('');
+  };
+
+  // Close edit modal
+  const closeEditModal = () => {
+    setEditModal({ show: false, deal: null });
+    setEditForm({});
+    setEditError('');
+  };
+
+  // Handle edit form changes
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Handle edit form submission
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    setEditLoading(true);
+    setEditError('');
+
+    try {
+      if (!editForm.name.trim()) {
+        throw new Error('Deal name is required');
+      }
+
+      // Additional validation for managers
+      if (user.role === 'manager') {
+        if (editForm.office !== user.office) {
+          throw new Error('You can only edit deals from your office location');
+        }
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/deals/${editModal.deal._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editForm),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to update deal');
+      }
+
+      const updatedDeal = await response.json();
+      
+      // Update local state
+      setDeals(prevDeals => 
+        prevDeals.map(deal => 
+          deal._id === editModal.deal._id ? { ...deal, ...editForm } : deal
+        )
+      );
+
+      closeEditModal();
+      setError(null);
+    } catch (error) {
+      setEditError(error.message);
+      console.error('Error updating deal:', error);
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
   const handleBusinessUnitChange = (e) => {
     setSelectedUnit(e.target.value);
   };
@@ -205,7 +359,7 @@ const Deals = () => {
           </select>
           <button 
             className="create-deal-btn"
-            onClick={() => navigate(`/deals/create?businessUnit=${encodeURIComponent(selectedUnit)}`)}
+            onClick={() => navigate('/deals/create')}
           >
             Create Deal
           </button>
@@ -213,6 +367,173 @@ const Deals = () => {
       </div>
 
       {error && <div className="error-message">{error}</div>}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm.show && (
+        <div className="delete-modal-overlay">
+          <div className="delete-modal">
+            <h3>Confirm Delete</h3>
+            <p>Are you sure you want to delete the deal "{deleteConfirm.dealName}"?</p>
+            <p>This action cannot be undone.</p>
+            <div className="delete-modal-buttons">
+              <button 
+                className="delete-confirm-btn"
+                onClick={() => handleDeleteDeal(deleteConfirm.dealId)}
+              >
+                Delete
+              </button>
+              <button 
+                className="delete-cancel-btn"
+                onClick={cancelDelete}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Deal Modal */}
+      {editModal.show && (
+        <div className="edit-modal-overlay">
+          <div className="edit-modal">
+            <div className="edit-modal-header">
+              <h3>Edit Deal</h3>
+              <button className="close-modal-btn" onClick={closeEditModal}>×</button>
+            </div>
+            
+            {editError && <div className="error-message">{editError}</div>}
+            
+            <form onSubmit={handleEditSubmit} className="edit-form">
+              <div className="edit-form-section">
+                <h4>Basic Information</h4>
+                
+                <div className="edit-form-row">
+                  <div className="edit-form-group">
+                    <label>Deal Name *</label>
+                    <input 
+                      type="text" 
+                      name="name" 
+                      value={editForm.name} 
+                      onChange={handleEditChange} 
+                      required 
+                    />
+                  </div>
+                  <div className="edit-form-group">
+                    <label>Stage</label>
+                    <select name="stage" value={editForm.stage} onChange={handleEditChange}>
+                      {PIPELINES[editModal.deal.businessUnit]?.map(stage => (
+                        <option key={stage} value={stage}>{stage}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                
+                <div className="edit-form-row">
+                  <div className="edit-form-group">
+                    <label>Office</label>
+                    <select name="office" value={editForm.office} onChange={handleEditChange}>
+                      {offices.map(office => (
+                        <option key={office._id} value={office.name}>{office.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="edit-form-group">
+                    <label>Owner</label>
+                    <input type="text" name="owner" value={editForm.owner} onChange={handleEditChange} />
+                  </div>
+                </div>
+                
+                <div className="edit-form-row">
+                  <div className="edit-form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" value={editForm.email} onChange={handleEditChange} />
+                  </div>
+                  <div className="edit-form-group">
+                    <label>Phone</label>
+                    <input type="text" name="phone" value={editForm.phone} onChange={handleEditChange} />
+                  </div>
+                </div>
+                
+                <div className="edit-form-row">
+                  <div className="edit-form-group">
+                    <label>Commission</label>
+                    <input type="text" name="commission" value={editForm.commission} onChange={handleEditChange} />
+                  </div>
+                  <div className="edit-form-group">
+                    <label>Date Created</label>
+                    <input type="date" name="dateCreated" value={editForm.dateCreated} onChange={handleEditChange} />
+                  </div>
+                </div>
+                
+                <div className="edit-form-group full-width">
+                  <label>Notes</label>
+                  <textarea name="notes" value={editForm.notes} onChange={handleEditChange} rows="3" />
+                </div>
+              </div>
+              
+              {/* Business Brokers Specific Fields */}
+              {editModal.deal.businessUnit === 'Business Brokers' && (
+                <div className="edit-form-section">
+                  <h4>Business Information</h4>
+                  
+                  <div className="edit-form-row">
+                    <div className="edit-form-group">
+                      <label>Business Name</label>
+                      <input type="text" name="businessName" value={editForm.businessName} onChange={handleEditChange} />
+                    </div>
+                    <div className="edit-form-group">
+                      <label>Type of Business</label>
+                      <input type="text" name="typeOfBusiness" value={editForm.typeOfBusiness} onChange={handleEditChange} />
+                    </div>
+                  </div>
+                  
+                  <div className="edit-form-row">
+                    <div className="edit-form-group">
+                      <label>Selling Consideration</label>
+                      <input type="text" name="sellingConsideration" value={editForm.sellingConsideration} onChange={handleEditChange} />
+                    </div>
+                    <div className="edit-form-group">
+                      <label>Length of Operation</label>
+                      <input type="text" name="lengthOfOperation" value={editForm.lengthOfOperation} onChange={handleEditChange} />
+                    </div>
+                  </div>
+                  
+                  <div className="edit-form-group full-width">
+                    <label>Location</label>
+                    <input type="text" name="location" value={editForm.location} onChange={handleEditChange} />
+                  </div>
+                </div>
+              )}
+              
+              {/* Global Properties Specific Fields */}
+              {editModal.deal.businessUnit === 'Global Properties' && (
+                <div className="edit-form-section">
+                  <h4>Member Information</h4>
+                  
+                  <div className="edit-form-group">
+                    <label>Member</label>
+                    <select name="member" value={editForm.member} onChange={handleEditChange}>
+                      <option value="No">No</option>
+                      <option value="Yes">Yes</option>
+                      <option value="Refunded">Refunded</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+              
+              <div className="edit-form-actions">
+                <button type="button" className="cancel-btn" onClick={closeEditModal}>
+                  Cancel
+                </button>
+                <button type="submit" className="submit-btn" disabled={editLoading}>
+                  {editLoading ? 'Updating...' : 'Update Deal'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="kanban-board">
@@ -246,11 +567,46 @@ const Deals = () => {
                               {...provided.dragHandleProps}
                               className={`deal-card ${user.role === 'manager' && deal.office !== user.office ? 'non-draggable' : 'draggable'}`}
                             >
-                              <h4>{deal.name}</h4>
+                              <div className="deal-card-header">
+                                <h4>{deal.name}</h4>
+                                <div className="deal-card-actions">
+                                  {canEditDeal(deal) && (
+                                    <button
+                                      className="edit-deal-btn"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        showEditModal(deal);
+                                      }}
+                                      title="Edit deal"
+                                    >
+                                      ✏️
+                                    </button>
+                                  )}
+                                  {user.role === 'super_admin' && (
+                                    <button
+                                      className="delete-deal-btn"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        showDeleteConfirm(deal._id, deal.name);
+                                      }}
+                                      title="Delete deal"
+                                    >
+                                      🗑️
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
                               <div className="deal-details">
                                 <span className="deal-owner">{deal.owner}</span>
                                 <span className="deal-office">{deal.office}</span>
                               </div>
+                              {/* Business Name for Business Brokers */}
+                              {deal.businessUnit === 'Business Brokers' && deal.businessName && (
+                                <div className="deal-business-name">
+                                  <span className="business-name-label">Business:</span>
+                                  <span className="business-name-value">{deal.businessName}</span>
+                                </div>
+                              )}
                             </div>
                           )}
                         </Draggable>
