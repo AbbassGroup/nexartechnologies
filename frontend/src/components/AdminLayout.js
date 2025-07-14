@@ -66,7 +66,7 @@ const AdminLayout = () => {
             {user?.role === 'super_admin' && (
               <li>
                 <NavLink to="/admin-dashboard/business-setting" className={({ isActive }) => isActive ? 'active' : ''}>
-                  Business Setting
+                  Business Settings
                 </NavLink>
               </li>
             )}
