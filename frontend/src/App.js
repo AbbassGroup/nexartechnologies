@@ -51,8 +51,8 @@ function App() {
                   <Users />
                 </ProtectedRoute>
               } />
-              <Route path="contacts" element={<Contacts/>} />
-              <Route path="contacts/create" element={<CreateContact />} />
+              <Route path="prospects" element={<Contacts/>} />
+              <Route path="prospects/create" element={<CreateContact />} />
               <Route path="deals" element={<Deals />} />
               <Route path="settings" element={<div>Settings Page (Coming Soon)</div>} />
               <Route path="business-setting" element={

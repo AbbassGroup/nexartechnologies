@@ -138,10 +138,42 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-.deal-card h4 {
-  margin: 0 0 8px 0;
+/* Deal Card Header with Delete Button */
+.deal-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.deal-card-header h4 {
+  margin: 0;
   font-size: 14px;
   color: #333;
+  flex: 1;
+  padding-right: 8px;
+}
+
+.delete-deal-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 2px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.delete-deal-btn:hover {
+  opacity: 1;
+  background: rgba(244, 67, 54, 0.1);
+  transform: scale(1.1);
+}
+
+.delete-deal-btn:active {
+  transform: scale(0.95);
 }
 
 .deal-details {
@@ -204,6 +236,79 @@
   font-size: 0.95rem;
 }
 
+/* Delete Confirmation Modal */
+.delete-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.delete-modal {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.delete-modal h3 {
+  margin: 0 0 16px 0;
+  color: #d32f2f;
+  font-size: 1.2rem;
+}
+
+.delete-modal p {
+  margin: 0 0 12px 0;
+  color: #666;
+  line-height: 1.5;
+}
+
+.delete-modal-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  justify-content: flex-end;
+}
+
+.delete-confirm-btn {
+  padding: 8px 16px;
+  background: #d32f2f;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.delete-confirm-btn:hover {
+  background: #c62828;
+}
+
+.delete-cancel-btn {
+  padding: 8px 16px;
+  background: #f5f5f5;
+  color: #666;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.delete-cancel-btn:hover {
+  background: #e0e0e0;
+  border-color: #ccc;
+}
+
 /* Responsive Styles */
 @media (max-width: 1200px) {
   .deals-header {
@@ -242,6 +347,20 @@
   
   .deal-card h4 {
     font-size: 1rem;
+  }
+  
+  .delete-modal {
+    margin: 20px;
+    padding: 20px;
+  }
+  
+  .delete-modal-buttons {
+    flex-direction: column;
+  }
+  
+  .delete-confirm-btn,
+  .delete-cancel-btn {
+    width: 100%;
   }
 }
 

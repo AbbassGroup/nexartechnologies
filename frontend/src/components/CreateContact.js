@@ -48,7 +48,7 @@ const CreateContact = () => {
         const data = await response.json().catch(() => ({}));
         throw new Error(data.error || 'Failed to create contact');
       }
-      navigate('/admin-dashboard/contacts');
+      navigate('/admin-dashboard/prospects');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -61,50 +61,81 @@ const CreateContact = () => {
       <div className="deals-header">
         <h2>Create Contact</h2>
       </div>
-      <form className="deal-form" onSubmit={handleSubmit} style={{ maxWidth: 600, margin: '0 auto' }}>
-        {error && <div className="error-message" style={{ color: 'red', marginBottom: 16 }}>{error}</div>}
+      {error && <div className="error-message">{error}</div>}
+      <form onSubmit={handleSubmit} className="create-form">
         <div className="form-group-row">
-          <label>First Name *</label>
-          <input name="firstName" value={form.firstName} onChange={handleChange} required />
+          <div className="form-group">
+            <label>First Name *</label>
+            <input
+              name="firstName"
+              value={form.firstName}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Last Name *</label>
+            <input
+              name="lastName"
+              value={form.lastName}
+              onChange={handleChange}
+              required
+            />
+          </div>
         </div>
         <div className="form-group-row">
-          <label>Last Name *</label>
-          <input name="lastName" value={form.lastName} onChange={handleChange} required />
+          <div className="form-group">
+            <label>Phone *</label>
+            <input
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Email *</label>
+            <input
+              name="email"
+              type="email"
+              value={form.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
         </div>
         <div className="form-group-row">
-          <label>Phone *</label>
-          <input name="phone" value={form.phone} onChange={handleChange} required />
+          <div className="form-group">
+            <label>Industry</label>
+            <input name="industry" value={form.industry} onChange={handleChange} />
+          </div>
+          <div className="form-group">
+            <label>Business Type</label>
+            <input name="businessType" value={form.businessType} onChange={handleChange} />
+          </div>
         </div>
         <div className="form-group-row">
-          <label>Email *</label>
-          <input name="email" value={form.email} onChange={handleChange} required />
+          <div className="form-group">
+            <label>Price Range</label>
+            <input name="priceRange" value={form.priceRange} onChange={handleChange} />
+          </div>
+          <div className="form-group">
+            <label>Location</label>
+            <input name="location" value={form.location} onChange={handleChange} />
+          </div>
         </div>
         <div className="form-group-row">
-          <label>Industry</label>
-          <input name="industry" value={form.industry} onChange={handleChange} />
-        </div>
-        <div className="form-group-row">
-          <label>Business Type</label>
-          <input name="businessType" value={form.businessType} onChange={handleChange} />
-        </div>
-        <div className="form-group-row">
-          <label>Price Range</label>
-          <input name="priceRange" value={form.priceRange} onChange={handleChange} />
-        </div>
-        <div className="form-group-row">
-          <label>Location</label>
-          <input name="location" value={form.location} onChange={handleChange} />
-        </div>
-        <div className="form-group-row">
-          <label>City</label>
-          <input name="city" value={form.city} onChange={handleChange} />
-        </div>
-        <div className="form-group-row">
-          <label>Contact Owner</label>
-          <input name="contactOwner" value={form.contactOwner} onChange={handleChange} />
+          <div className="form-group">
+            <label>City</label>
+            <input name="city" value={form.city} onChange={handleChange} />
+          </div>
+          <div className="form-group">
+            <label>Contact Owner</label>
+            <input name="contactOwner" value={form.contactOwner} onChange={handleChange} />
+          </div>
         </div>
         <div className="form-actions">
-          <button type="button" className="cancel-btn" onClick={() => navigate('/admin-dashboard/contacts')}>Cancel</button>
+          <button type="button" className="cancel-btn" onClick={() => navigate('/admin-dashboard/prospects')}>Cancel</button>
           <button type="submit" className="submit-btn" disabled={loading}>{loading ? 'Creating...' : 'Create Contact'}</button>
         </div>
       </form>

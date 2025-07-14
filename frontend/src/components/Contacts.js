@@ -47,9 +47,9 @@ const Contacts = () => {
   return (
     <div className="deals-container">
       <div className="deals-header" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2>Contacts</h2>
-        <button className="create-contact-btn" onClick={() => navigate('/admin-dashboard/contacts/create')}>
-          Create Contact <span style={{ fontSize: '1.1em', marginLeft: 4 }}>▼</span>
+        <h2>Prospects</h2>
+        <button className="create-contact-btn" onClick={() => navigate('/admin-dashboard/prospects/create')}>
+          Create Prospects <span style={{ fontSize: '1.1em', marginLeft: 4 }}>▼</span>
         </button>
       </div>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>

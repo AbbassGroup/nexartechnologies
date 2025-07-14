@@ -43,6 +43,7 @@ const Deals = () => {
   const [deals, setDeals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState({ show: false, dealId: null, dealName: '' });
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -178,6 +179,40 @@ const Deals = () => {
     }
   };
 
+  // Handle deal deletion (super admin only)
+  const handleDeleteDeal = async (dealId) => {
+    if (user.role !== 'super_admin') return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/deals/${dealId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) throw new Error('Failed to delete deal');
+
+      // Remove deal from local state
+      setDeals(prevDeals => prevDeals.filter(deal => deal._id !== dealId));
+      setDeleteConfirm({ show: false, dealId: null, dealName: '' });
+      setError(null);
+    } catch (error) {
+      setError('Failed to delete deal');
+      console.error('Error deleting deal:', error);
+    }
+  };
+
+  // Show delete confirmation dialog
+  const showDeleteConfirm = (dealId, dealName) => {
+    setDeleteConfirm({ show: true, dealId, dealName });
+  };
+
+  // Cancel delete confirmation
+  const cancelDelete = () => {
+    setDeleteConfirm({ show: false, dealId: null, dealName: '' });
+  };
+
   const handleBusinessUnitChange = (e) => {
     setSelectedUnit(e.target.value);
   };
@@ -217,6 +252,31 @@ const Deals = () => {
 
       {error && <div className="error-message">{error}</div>}
 
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm.show && (
+        <div className="delete-modal-overlay">
+          <div className="delete-modal">
+            <h3>Confirm Delete</h3>
+            <p>Are you sure you want to delete the deal "{deleteConfirm.dealName}"?</p>
+            <p>This action cannot be undone.</p>
+            <div className="delete-modal-buttons">
+              <button 
+                className="delete-confirm-btn"
+                onClick={() => handleDeleteDeal(deleteConfirm.dealId)}
+              >
+                Delete
+              </button>
+              <button 
+                className="delete-cancel-btn"
+                onClick={cancelDelete}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="kanban-board">
           <div className="kanban-row">
@@ -249,7 +309,21 @@ const Deals = () => {
                               {...provided.dragHandleProps}
                               className={`deal-card ${user.role === 'manager' && deal.office !== user.office ? 'non-draggable' : 'draggable'}`}
                             >
-                              <h4>{deal.name}</h4>
+                              <div className="deal-card-header">
+                                <h4>{deal.name}</h4>
+                                {user.role === 'super_admin' && (
+                                  <button
+                                    className="delete-deal-btn"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      showDeleteConfirm(deal._id, deal.name);
+                                    }}
+                                    title="Delete deal"
+                                  >
+                                    🗑️
+                                  </button>
+                                )}
+                              </div>
                               <div className="deal-details">
                                 <span className="deal-owner">{deal.owner}</span>
                                 <span className="deal-office">{deal.office}</span>

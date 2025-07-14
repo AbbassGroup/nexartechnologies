@@ -34,8 +34,8 @@ const AdminLayout = () => {
             )}
            
             <li>
-              <NavLink to="/admin-dashboard/contacts" className={({ isActive }) => isActive ? 'active' : ''}>
-                Contacts
+              <NavLink to="/admin-dashboard/prospects" className={({ isActive }) => isActive ? 'active' : ''}>
+                Prospects
               </NavLink>
             </li>
             <li>
