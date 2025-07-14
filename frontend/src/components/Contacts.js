@@ -43,16 +43,23 @@ const Contacts = () => {
     }
   }, []);
 
+  const SEARCHABLE_FIELDS = [
+    'firstName', 'lastName', 'phone', 'email', 'industry',
+    'businessType', 'priceRange', 'location', 'city', 'contactOwner'
+  ];
+
   useEffect(() => {
     if (!search) {
       setFilteredContacts(contacts);
     } else {
       const lower = search.toLowerCase();
       setFilteredContacts(
-        contacts.filter(
-          c =>
-            (c.firstName && c.firstName.toLowerCase().includes(lower)) ||
-            (c.lastName && c.lastName.toLowerCase().includes(lower))
+        contacts.filter(contact =>
+          SEARCHABLE_FIELDS.some(
+            field =>
+              contact[field] &&
+              contact[field].toString().toLowerCase().includes(lower)
+          )
         )
       );
     }
