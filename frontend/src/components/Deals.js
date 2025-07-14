@@ -600,6 +600,13 @@ const Deals = () => {
                                 <span className="deal-owner">{deal.owner}</span>
                                 <span className="deal-office">{deal.office}</span>
                               </div>
+                              {/* Business Name for Business Brokers */}
+                              {deal.businessUnit === 'Business Brokers' && deal.businessName && (
+                                <div className="deal-business-name">
+                                  <span className="business-name-label">Business:</span>
+                                  <span className="business-name-value">{deal.businessName}</span>
+                                </div>
+                              )}
                             </div>
                           )}
                         </Draggable>

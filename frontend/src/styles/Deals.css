@@ -208,10 +208,33 @@
   justify-content: space-between;
   font-size: 12px;
   color: #666;
+  margin-bottom: 6px;
 }
 
 .deal-owner, .deal-office {
   display: inline-block;
+}
+
+/* Business Name Display for Business Brokers */
+.deal-business-name {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #666;
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.business-name-label {
+  font-weight: 600;
+  color: #1976d2;
+}
+
+.business-name-value {
+  color: #333;
+  font-weight: 500;
 }
 
 /* Add tooltip for non-draggable cards */

@@ -671,7 +671,15 @@ app.post('/api/deals', authenticateUser, async (req, res) => {
         console.log('Request body:', req.body);
         console.log('User:', req.user);
         
-        const { name, stage, businessUnit, office } = req.body;
+        const { 
+            name, stage, businessUnit, office, email, phone, dateCreated, 
+            notes, commission, businessName, typeOfBusiness, sellingConsideration,
+            lengthOfOperation, location, member, leadStatus, accountName, type,
+            nextStep, leadSource, contactName, whereBased, whereToBuy, listingAgent,
+            sellingAgent, agreement, agreementTerms, listingPrice, salesCommission,
+            closingDate, probability, expectedRevenue, campaignSource, whenToBuy,
+            comments, owner
+        } = req.body;
 
         // Validate required fields based on Deal model
         if (!name || !stage || !businessUnit || !office) {
@@ -705,13 +713,44 @@ app.post('/api/deals', authenticateUser, async (req, res) => {
             }
         }
 
-        // Create the deal with required fields
+        // Create the deal with all fields
         const dealData = {
             name,
             stage,
-            owner: req.user.name,
+            owner: owner || req.user.name,
             businessUnit,
-            office
+            office,
+            email,
+            phone,
+            dateCreated: dateCreated ? new Date(dateCreated) : new Date(),
+            notes,
+            commission,
+            businessName,
+            typeOfBusiness,
+            sellingConsideration,
+            lengthOfOperation,
+            location,
+            member,
+            leadStatus,
+            accountName,
+            type,
+            nextStep,
+            leadSource,
+            contactName,
+            whereBased,
+            whereToBuy,
+            listingAgent,
+            sellingAgent,
+            agreement,
+            agreementTerms,
+            listingPrice,
+            salesCommission,
+            closingDate,
+            probability: probability ? Number(probability) : 0,
+            expectedRevenue,
+            campaignSource,
+            whenToBuy,
+            comments
         };
 
         console.log('Creating deal with data:', dealData);
@@ -741,7 +780,15 @@ app.put('/api/deals/:id', authenticateUser, async (req, res) => {
         console.log('Request body:', req.body);
         console.log('User:', req.user);
         
-        const { name, stage, businessUnit, office } = req.body;
+        const { 
+            name, stage, businessUnit, office, email, phone, dateCreated, 
+            notes, commission, businessName, typeOfBusiness, sellingConsideration,
+            lengthOfOperation, location, member, leadStatus, accountName, type,
+            nextStep, leadSource, contactName, whereBased, whereToBuy, listingAgent,
+            sellingAgent, agreement, agreementTerms, listingPrice, salesCommission,
+            closingDate, probability, expectedRevenue, campaignSource, whenToBuy,
+            comments, owner
+        } = req.body;
 
         // Find the deal first
         const deal = await Deal.findById(req.params.id);
@@ -781,13 +828,44 @@ app.put('/api/deals/:id', authenticateUser, async (req, res) => {
             }
         }
 
-        // Update the deal
+        // Update the deal with all fields
         const updateData = {
-            name: name || deal.name,
-            stage: stage || deal.stage,
-            businessUnit: businessUnit || deal.businessUnit,
-            office: office || deal.office,
-            owner: deal.owner // Keep the original owner
+            name: name !== undefined ? name : deal.name,
+            stage: stage !== undefined ? stage : deal.stage,
+            businessUnit: businessUnit !== undefined ? businessUnit : deal.businessUnit,
+            office: office !== undefined ? office : deal.office,
+            email: email !== undefined ? email : deal.email,
+            phone: phone !== undefined ? phone : deal.phone,
+            dateCreated: dateCreated ? new Date(dateCreated) : deal.dateCreated,
+            notes: notes !== undefined ? notes : deal.notes,
+            commission: commission !== undefined ? commission : deal.commission,
+            businessName: businessName !== undefined ? businessName : deal.businessName,
+            typeOfBusiness: typeOfBusiness !== undefined ? typeOfBusiness : deal.typeOfBusiness,
+            sellingConsideration: sellingConsideration !== undefined ? sellingConsideration : deal.sellingConsideration,
+            lengthOfOperation: lengthOfOperation !== undefined ? lengthOfOperation : deal.lengthOfOperation,
+            location: location !== undefined ? location : deal.location,
+            member: member !== undefined ? member : deal.member,
+            leadStatus: leadStatus !== undefined ? leadStatus : deal.leadStatus,
+            accountName: accountName !== undefined ? accountName : deal.accountName,
+            type: type !== undefined ? type : deal.type,
+            nextStep: nextStep !== undefined ? nextStep : deal.nextStep,
+            leadSource: leadSource !== undefined ? leadSource : deal.leadSource,
+            contactName: contactName !== undefined ? contactName : deal.contactName,
+            whereBased: whereBased !== undefined ? whereBased : deal.whereBased,
+            whereToBuy: whereToBuy !== undefined ? whereToBuy : deal.whereToBuy,
+            listingAgent: listingAgent !== undefined ? listingAgent : deal.listingAgent,
+            sellingAgent: sellingAgent !== undefined ? sellingAgent : deal.sellingAgent,
+            agreement: agreement !== undefined ? agreement : deal.agreement,
+            agreementTerms: agreementTerms !== undefined ? agreementTerms : deal.agreementTerms,
+            listingPrice: listingPrice !== undefined ? listingPrice : deal.listingPrice,
+            salesCommission: salesCommission !== undefined ? salesCommission : deal.salesCommission,
+            closingDate: closingDate !== undefined ? closingDate : deal.closingDate,
+            probability: probability !== undefined ? Number(probability) : deal.probability,
+            expectedRevenue: expectedRevenue !== undefined ? expectedRevenue : deal.expectedRevenue,
+            campaignSource: campaignSource !== undefined ? campaignSource : deal.campaignSource,
+            whenToBuy: whenToBuy !== undefined ? whenToBuy : deal.whenToBuy,
+            comments: comments !== undefined ? comments : deal.comments,
+            owner: owner !== undefined ? owner : deal.owner
         };
 
         console.log('Updating deal with data:', updateData);

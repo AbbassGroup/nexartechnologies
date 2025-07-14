@@ -208,6 +208,13 @@ const CreateDeal = () => {
         throw new Error('Business unit is required');
       }
       
+      // Validate Business Brokers specific required fields
+      if (form.businessUnit === 'Business Brokers') {
+        if (!form.businessName.trim()) {
+          throw new Error('Business name is required for Business Brokers deals');
+        }
+      }
+      
       if (!user) {
         throw new Error('User not authenticated');
       }
@@ -422,8 +429,15 @@ const CreateDeal = () => {
                 <h3>Business Information</h3>
                 
                 <div className="form-group-row">
-                  <label>Business Name</label>
-                  <input type="text" name="businessName" value={form.businessName} onChange={handleChange} />
+                  <label>Business Name *</label>
+                  <input 
+                    type="text" 
+                    name="businessName" 
+                    value={form.businessName} 
+                    onChange={handleChange} 
+                    required 
+                    placeholder="Enter business name"
+                  />
                 </div>
                 
                 <div className="form-group-row">
