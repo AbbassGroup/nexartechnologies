@@ -13,8 +13,34 @@ const Contacts = () => {
   const [search, setSearch] = useState('');
   const [filteredContacts, setFilteredContacts] = useState([]);
 
+  // Check if user can access Prospects
+  const canAccessProspects = () => {
+    if (!user) return false;
+    
+    // Super admin and admin can always access
+    if (user.role === 'super_admin' || user.role === 'admin') {
+      return true;
+    }
+    
+    // Managers can only access if they belong to Business Brokers business unit
+    if (user.role === 'manager') {
+      return user.businessUnits && user.businessUnits.includes('Business Brokers');
+    }
+    
+    return false;
+  };
+
+  // Redirect unauthorized users
   useEffect(() => {
-    fetchContacts();
+    if (!canAccessProspects()) {
+      navigate('/admin-dashboard');
+    }
+  }, [user, navigate]);
+
+  useEffect(() => {
+    if (canAccessProspects()) {
+      fetchContacts();
+    }
   }, []);
 
   useEffect(() => {
@@ -43,6 +69,11 @@ const Contacts = () => {
       setFilteredContacts([]);
     }
   };
+
+  // Don't render if user doesn't have access
+  if (!canAccessProspects()) {
+    return null;
+  }
 
   return (
     <div className="deals-container">

@@ -12,6 +12,23 @@ const AdminLayout = () => {
     navigate('/');
   };
 
+  // Check if user can access Prospects
+  const canAccessProspects = () => {
+    if (!user) return false;
+    
+    // Super admin and admin can always access
+    if (user.role === 'super_admin' || user.role === 'admin') {
+      return true;
+    }
+    
+    // Managers can only access if they belong to Business Brokers business unit
+    if (user.role === 'manager') {
+      return user.businessUnits && user.businessUnits.includes('Business Brokers');
+    }
+    
+    return false;
+  };
+
   return (
     <div className="admin-layout">
       <div className="sidebar">
@@ -33,11 +50,13 @@ const AdminLayout = () => {
               </li>
             )}
            
-            <li>
-              <NavLink to="/admin-dashboard/prospects" className={({ isActive }) => isActive ? 'active' : ''}>
-                Prospects
-              </NavLink>
-            </li>
+            {canAccessProspects() && (
+              <li>
+                <NavLink to="/admin-dashboard/prospects" className={({ isActive }) => isActive ? 'active' : ''}>
+                  Prospects
+                </NavLink>
+              </li>
+            )}
             <li>
               <NavLink to="/admin-dashboard/deals" className={({ isActive }) => isActive ? 'active' : ''}>
                 Deals
