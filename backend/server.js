@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
+const multer = require('multer');
+const XLSX = require('xlsx');
 const Admin = require('./models/Admin');
 const User = require('./models/User');
 const Office = require('./models/Office');
@@ -18,6 +20,25 @@ const app = express();
 mongoose.connect(process.env.MONGODB_URI, { dbName: 'CRM' })
     .then(() => console.log('MongoDB connected successfully'))
     .catch((err) => console.error('MongoDB connection error:', err));
+
+// Multer configuration for file uploads
+const storage = multer.memoryStorage();
+const upload = multer({ 
+    storage: storage,
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+            file.mimetype === 'application/vnd.ms-excel' ||
+            file.originalname.endsWith('.xlsx') ||
+            file.originalname.endsWith('.xls')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only Excel files are allowed'), false);
+        }
+    },
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB limit
+    }
+});
 
 // Middleware
 app.use(cors());
@@ -980,6 +1001,160 @@ app.get('/api/contacts', async (req, res) => {
         res.json({ success: true, data: contacts });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Export contacts to Excel
+app.get('/api/contacts/export', async (req, res) => {
+    try {
+        const contacts = await Contact.find();
+        
+        // Prepare data for Excel
+        const excelData = contacts.map(contact => ({
+            'First Name': contact.firstName || '',
+            'Last Name': contact.lastName || '',
+            'Phone': contact.phone || '',
+            'Email': contact.email || '',
+            'Industry': contact.industry || '',
+            'Business Type': contact.businessType || '',
+            'Price Range': contact.priceRange || '',
+            'Location': contact.location || '',
+            'City': contact.city || '',
+            'Contact Owner': contact.contactOwner || '',
+            'Created At': contact.createdAt ? new Date(contact.createdAt).toLocaleDateString() : '',
+            'Updated At': contact.updatedAt ? new Date(contact.updatedAt).toLocaleDateString() : ''
+        }));
+
+        // Create workbook and worksheet
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+        // Set column widths
+        const columnWidths = [
+            { wch: 15 }, // First Name
+            { wch: 15 }, // Last Name
+            { wch: 15 }, // Phone
+            { wch: 25 }, // Email
+            { wch: 15 }, // Industry
+            { wch: 15 }, // Business Type
+            { wch: 15 }, // Price Range
+            { wch: 15 }, // Location
+            { wch: 15 }, // City
+            { wch: 15 }, // Contact Owner
+            { wch: 15 }, // Created At
+            { wch: 15 }  // Updated At
+        ];
+        worksheet['!cols'] = columnWidths;
+
+        // Add worksheet to workbook
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Contacts');
+
+        // Generate buffer
+        const excelBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
+        // Set headers for file download
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename=contacts.xlsx');
+        res.setHeader('Content-Length', excelBuffer.length);
+
+        res.send(excelBuffer);
+    } catch (error) {
+        console.error('Error exporting contacts:', error);
+        res.status(500).json({ success: false, error: 'Error exporting contacts' });
+    }
+});
+
+// Import contacts from Excel
+app.post('/api/contacts/import', upload.single('file'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ success: false, error: 'No file uploaded' });
+        }
+
+        // Read the Excel file
+        const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        
+        // Convert to JSON
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        
+        if (jsonData.length < 2) {
+            return res.status(400).json({ success: false, error: 'Excel file must have at least a header row and one data row' });
+        }
+
+        // Get headers (first row)
+        const headers = jsonData[0];
+        
+        // Map headers to field names
+        const headerMapping = {
+            'First Name': 'firstName',
+            'Last Name': 'lastName',
+            'Phone': 'phone',
+            'Email': 'email',
+            'Industry': 'industry',
+            'Business Type': 'businessType',
+            'Price Range': 'priceRange',
+            'Location': 'location',
+            'City': 'city',
+            'Contact Owner': 'contactOwner'
+        };
+
+        // Process data rows (skip header row)
+        const contactsToImport = [];
+        const errors = [];
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (let i = 1; i < jsonData.length; i++) {
+            const row = jsonData[i];
+            const contactData = {};
+
+            // Map each column to the corresponding field
+            headers.forEach((header, index) => {
+                const fieldName = headerMapping[header];
+                if (fieldName && row[index] !== undefined && row[index] !== '') {
+                    contactData[fieldName] = String(row[index]).trim();
+                }
+            });
+
+            // Validate required fields
+            if (!contactData.firstName || !contactData.lastName || !contactData.phone || !contactData.email) {
+                errors.push(`Row ${i + 1}: Missing required fields (First Name, Last Name, Phone, Email)`);
+                errorCount++;
+                continue;
+            }
+
+            // Check for duplicate email
+            const existingContact = await Contact.findOne({ email: contactData.email });
+            if (existingContact) {
+                errors.push(`Row ${i + 1}: Email ${contactData.email} already exists`);
+                errorCount++;
+                continue;
+            }
+
+            contactsToImport.push(contactData);
+        }
+
+        // Import valid contacts
+        if (contactsToImport.length > 0) {
+            await Contact.insertMany(contactsToImport);
+            successCount = contactsToImport.length;
+        }
+
+        res.json({
+            success: true,
+            message: `Import completed. ${successCount} contacts imported successfully, ${errorCount} errors.`,
+            data: {
+                imported: successCount,
+                errors: errorCount,
+                errorDetails: errors
+            }
+        });
+
+    } catch (error) {
+        console.error('Error importing contacts:', error);
+        res.status(500).json({ success: false, error: 'Error importing contacts' });
     }
 });
 
