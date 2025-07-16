@@ -367,8 +367,9 @@ const Contacts = () => {
           />
         </div>
         
-        <div className="contacts-table-wrapper" style={{ overflowX: 'auto' }}>
-          <table className="contacts-table" style={{ width: '100%', borderCollapse: 'collapse', background: '#fff' }}>
+        {/* Table wrapper and table start */}
+        <div className="contacts-table-wrapper">
+          <table className="contacts-table">
             <thead>
               <tr style={{ background: '#f7f8fa' }}>
                 <th style={{ width: 40 }}><input type="checkbox" disabled /></th>
@@ -381,13 +382,14 @@ const Contacts = () => {
                 <th>Price Range</th>
                 <th>Location</th>
                 <th>City</th>
+                <th>CA Signed</th>
                 <th>Contact Owner</th>
                 {(user.role === 'admin' || user.role === 'super_admin') && <th>Actions</th>}
               </tr>
             </thead>
             <tbody>
               {filteredContacts.length === 0 ? (
-                <tr><td colSpan={11} style={{ textAlign: 'center', padding: 32, color: '#888' }}>No contacts found.</td></tr>
+                <tr><td colSpan={12} style={{ textAlign: 'center', padding: 32, color: '#888' }}>No contacts found.</td></tr>
               ) : (
                 filteredContacts.map((c, idx) => (
                   <tr key={c._id || idx} style={{ borderBottom: '1px solid #f0f0f0' }}>
@@ -401,6 +403,7 @@ const Contacts = () => {
                     <td>{c.priceRange || ''}</td>
                     <td>{c.location || ''}</td>
                     <td>{c.city || ''}</td>
+                    <td>{c.caSigned || ''}</td>
                     <td>{c.contactOwner || ''}</td>
                     {(user.role === 'admin' || user.role === 'super_admin') && (
                       <td>
@@ -426,6 +429,7 @@ const Contacts = () => {
             </tbody>
           </table>
         </div>
+        {/* Table wrapper and table end */}
 
         {/* Import Modal */}
         {showImportModal && (
@@ -664,6 +668,14 @@ const Contacts = () => {
                     <div className="edit-form-group">
                       <label>City</label>
                       <input type="text" name="city" value={editForm.city || ''} onChange={handleEditFormChange} />
+                    </div>
+                    <div className="edit-form-group">
+                      <label>CA Signed</label>
+                      <select name="caSigned" value={editForm.caSigned || ''} onChange={handleEditFormChange}>
+                        <option value="">Select</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
                     </div>
                     <div className="edit-form-group">
                       <label>Contact Owner</label>

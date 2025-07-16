@@ -15,6 +15,7 @@ const initialState = {
   priceRange: '',
   location: '',
   city: '',
+  caSigned: '',
   contactOwner: '',
 };
 
@@ -128,6 +129,14 @@ const CreateContact = () => {
           <div className="form-group">
             <label>City</label>
             <input name="city" value={form.city} onChange={handleChange} />
+          </div>
+          <div className="form-group">
+            <label>CA Signed</label>
+            <select name="caSigned" value={form.caSigned} onChange={handleChange}>
+              <option value="">Select</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
           </div>
           <div className="form-group">
             <label>Contact Owner</label>

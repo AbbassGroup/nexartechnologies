@@ -969,6 +969,7 @@ app.post('/api/contacts', async (req, res) => {
             priceRange,
             location,
             city,
+            caSigned,
             contactOwner
         } = req.body;
 
@@ -986,6 +987,7 @@ app.post('/api/contacts', async (req, res) => {
             priceRange,
             location,
             city,
+            caSigned,
             contactOwner
         });
         await newContact.save();
@@ -1020,7 +1022,10 @@ app.get('/api/contacts/:id', async (req, res) => {
 // Update a contact by ID
 app.put('/api/contacts/:id', async (req, res) => {
   try {
-    const updated = await Contact.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updateData = { ...req.body };
+    // Only allow caSigned to be updated if present
+    if (typeof req.body.caSigned === 'undefined') delete updateData.caSigned;
+    const updated = await Contact.findByIdAndUpdate(req.params.id, updateData, { new: true });
     if (!updated) {
       return res.status(404).json({ success: false, error: 'Contact not found' });
     }
@@ -1059,6 +1064,7 @@ app.get('/api/contacts/export', async (req, res) => {
             'Price Range': contact.priceRange || '',
             'Location': contact.location || '',
             'City': contact.city || '',
+            'CA Signed': contact.caSigned || '',
             'Contact Owner': contact.contactOwner || '',
             'Created At': contact.createdAt ? new Date(contact.createdAt).toLocaleDateString() : '',
             'Updated At': contact.updatedAt ? new Date(contact.updatedAt).toLocaleDateString() : ''
@@ -1136,6 +1142,7 @@ app.post('/api/contacts/import', upload.single('file'), async (req, res) => {
             'Price Range': 'priceRange',
             'Location': 'location',
             'City': 'city',
+            'CA Signed': 'caSigned',
             'Contact Owner': 'contactOwner'
         };
 

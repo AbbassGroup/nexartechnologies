@@ -10,6 +10,7 @@ const ContactSchema = new mongoose.Schema({
   priceRange: { type: String },
   location: { type: String },
   city: { type: String },
+  caSigned: { type: String, default: '' },
   contactOwner: { type: String },
 }, { timestamps: true });
 

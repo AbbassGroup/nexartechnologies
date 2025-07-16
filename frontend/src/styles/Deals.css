@@ -706,3 +706,36 @@
   background: #1251a3;
   transform: translateY(-1px) scale(1.03);
 } 
+
+.contacts-table-wrapper {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.contacts-table {
+  min-width: 1200px;
+  border-collapse: collapse;
+  background: #fff;
+  width: 100%;
+}
+
+.contacts-table thead th {
+  position: sticky;
+  top: 0;
+  background: #f7f8fa;
+  z-index: 2;
+}
+
+.contacts-table tbody {
+  display: block;
+  max-height: 350px;
+  overflow-y: auto;
+  width: 100%;
+}
+
+.contacts-table thead,
+.contacts-table tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+} 
