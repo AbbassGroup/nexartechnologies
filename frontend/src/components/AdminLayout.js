@@ -85,7 +85,6 @@ const AdminLayout = () => {
           <div className="topbar-user">
             <span className="user-avatar">{user?.name?.[0]?.toUpperCase() || '?'}</span>
             <span>{user?.name}</span>
-            <span style={{ color: '#888', fontSize: '0.95rem' }}>{user?.role}</span>
           </div>
         </div>
         <Outlet />
