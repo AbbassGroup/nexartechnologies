@@ -90,7 +90,9 @@ const CreateDeal = () => {
     whenToBuy: '',
     comments: '',
     lengthOfOperation: '',
-    location: ''
+    location: '',
+    abbassBusinessUnit: '',
+    abbassBusinessType: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -275,7 +277,11 @@ const CreateDeal = () => {
         stage: form.stage || PIPELINES[form.businessUnit]?.[0] || '',
         office: form.office || offices[0]?.name || '',
         owner: form.owner || user.name,
-        dateCreated: form.dateCreated || new Date().toISOString().split('T')[0]
+        dateCreated: form.dateCreated || new Date().toISOString().split('T')[0],
+        ...(form.businessUnit === 'ABBASS Group' ? {
+          abbassBusinessUnit: form.abbassBusinessUnit || '',
+          abbassBusinessType: form.abbassBusinessType || ''
+        } : {})
       };
 
       console.log('Submitting payload:', payload); // Debug log
@@ -421,6 +427,31 @@ const CreateDeal = () => {
                   )) || <option value="">Select business unit first</option>}
                 </select>
               </div>
+              {/* ABBASS Group Specific Fields */}
+              {form.businessUnit === 'ABBASS Group' && (
+                <>
+                  <div className="form-group-row">
+                    <label>Business Unit</label>
+                    <input
+                      type="text"
+                      name="abbassBusinessUnit"
+                      value={form.abbassBusinessUnit || ''}
+                      onChange={handleChange}
+                      placeholder="Enter ABBASS Group Business Unit"
+                    />
+                  </div>
+                  <div className="form-group-row">
+                    <label>Business Type</label>
+                    <input
+                      type="text"
+                      name="abbassBusinessType"
+                      value={form.abbassBusinessType || ''}
+                      onChange={handleChange}
+                      placeholder="Enter ABBASS Group Business Type"
+                    />
+                  </div>
+                </>
+              )}
               
               <div className="form-group-row">
                 <label>Deal Name *</label>

@@ -699,7 +699,8 @@ app.post('/api/deals', authenticateUser, async (req, res) => {
             nextStep, leadSource, contactName, whereBased, whereToBuy, listingAgent,
             sellingAgent, agreement, agreementTerms, listingPrice, salesCommission,
             closingDate, probability, expectedRevenue, campaignSource, whenToBuy,
-            comments, owner
+            comments, owner,
+            abbassBusinessUnit, abbassBusinessType
         } = req.body;
 
         // Validate required fields based on Deal model
@@ -771,7 +772,9 @@ app.post('/api/deals', authenticateUser, async (req, res) => {
             expectedRevenue,
             campaignSource,
             whenToBuy,
-            comments
+            comments,
+            abbassBusinessUnit,
+            abbassBusinessType
         };
 
         console.log('Creating deal with data:', dealData);
@@ -793,6 +796,19 @@ app.post('/api/deals', authenticateUser, async (req, res) => {
     }
 });
 
+// Get a single deal by ID
+app.get('/api/deals/:id', authenticateUser, async (req, res) => {
+    try {
+        const deal = await Deal.findById(req.params.id);
+        if (!deal) {
+            return res.status(404).json({ success: false, error: 'Deal not found' });
+        }
+        res.json({ success: true, data: deal });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Error fetching deal', details: error.message });
+    }
+});
+
 // Update deal route - simplified without checkDealPermissions
 app.put('/api/deals/:id', authenticateUser, async (req, res) => {
     try {
@@ -808,7 +824,8 @@ app.put('/api/deals/:id', authenticateUser, async (req, res) => {
             nextStep, leadSource, contactName, whereBased, whereToBuy, listingAgent,
             sellingAgent, agreement, agreementTerms, listingPrice, salesCommission,
             closingDate, probability, expectedRevenue, campaignSource, whenToBuy,
-            comments, owner
+            comments, owner,
+            abbassBusinessUnit, abbassBusinessType
         } = req.body;
 
         // Find the deal first
@@ -886,7 +903,9 @@ app.put('/api/deals/:id', authenticateUser, async (req, res) => {
             campaignSource: campaignSource !== undefined ? campaignSource : deal.campaignSource,
             whenToBuy: whenToBuy !== undefined ? whenToBuy : deal.whenToBuy,
             comments: comments !== undefined ? comments : deal.comments,
-            owner: owner !== undefined ? owner : deal.owner
+            owner: owner !== undefined ? owner : deal.owner,
+            abbassBusinessUnit: abbassBusinessUnit !== undefined ? abbassBusinessUnit : deal.abbassBusinessUnit,
+            abbassBusinessType: abbassBusinessType !== undefined ? abbassBusinessType : deal.abbassBusinessType
         };
 
         console.log('Updating deal with data:', updateData);

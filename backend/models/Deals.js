@@ -43,7 +43,11 @@ const dealSchema = new mongoose.Schema({
   expectedRevenue: { type: String, trim: true },
   campaignSource: { type: String, trim: true },
   whenToBuy: { type: String, trim: true },
-  comments: { type: String, trim: true }
+  comments: { type: String, trim: true },
+  
+  // ABBASS Group specific fields
+  abbassBusinessUnit: { type: String, trim: true },
+  abbassBusinessType: { type: String, trim: true },
 }, {
   timestamps: true,
   collection: 'deals'

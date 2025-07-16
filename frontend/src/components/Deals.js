@@ -291,7 +291,9 @@ const Deals = () => {
       lengthOfOperation: deal.lengthOfOperation || '',
       location: deal.location || '',
       member: deal.member || 'No',
-      dateCreated: deal.dateCreated || new Date().toISOString().split('T')[0]
+      dateCreated: deal.dateCreated || new Date().toISOString().split('T')[0],
+      abbassBusinessUnit: deal.abbassBusinessUnit || '',
+      abbassBusinessType: deal.abbassBusinessType || ''
     });
     setEditModal({ show: true, deal });
     setEditError('');
@@ -465,6 +467,33 @@ const Deals = () => {
                     </select>
                   </div>
                 </div>
+                {/* ABBASS Group Specific Fields */}
+                {editModal.deal.businessUnit === 'ABBASS Group' && (
+                  <>
+                    <div className="edit-form-row">
+                      <div className="edit-form-group">
+                        <label>Business Unit</label>
+                        <input
+                          type="text"
+                          name="abbassBusinessUnit"
+                          value={editForm.abbassBusinessUnit || ''}
+                          onChange={handleEditChange}
+                          placeholder="Enter ABBASS Group Business Unit"
+                        />
+                      </div>
+                      <div className="edit-form-group">
+                        <label>Business Type</label>
+                        <input
+                          type="text"
+                          name="abbassBusinessType"
+                          value={editForm.abbassBusinessType || ''}
+                          onChange={handleEditChange}
+                          placeholder="Enter ABBASS Group Business Type"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
                 
                 <div className="edit-form-row">
                   <div className="edit-form-group">
