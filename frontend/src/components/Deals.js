@@ -25,11 +25,11 @@ const PIPELINES = {
     'Pre-Approval', 'Contract signed', 'Unconditional loan', 'Settled', 'Nurture', 'DNQ', 'Closed Lost', 'FLUP', 'CLOSED. Do Not Contact'
   ],
   'Business Brokers': [
-    'Enquiry', 'Initial Consultation', 'Proposal sent', 'Backlog for FLUP', 'Engagement Signed', 'Ad launch', 'Under offer', 'Settled, Invoice paid',
+    'Enquiry', 'Initial Consultation', 'Proposal sent', 'Engagement Signed', 'Ad launch', 'Under offer', 'Settled, Invoice paid',
     'Nurture', 'DNQ', 'Closed Lost', 'CLOSED. Do Not Contact'
   ],
   'ABBASS Group': [
-    'Enquiry', 'Initial Call', 'Interview 1', 'Interview 2', 'Offer', 'Contract Signed', 'Onboarded'
+    'Enquiry', 'Initial Call', 'Interview 1', 'Interview 2', 'Offer', 'Contract Signed', 'Onboarded', 'Not Progressed'
   ]
 };
 
