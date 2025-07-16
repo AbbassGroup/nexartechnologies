@@ -116,9 +116,26 @@ const CreateDeal = () => {
     }
   }, [form.businessUnit]);
 
+  // Update owner when business unit changes or users are loaded
+  useEffect(() => {
+    if (form.businessUnit && users.length > 0) {
+      const filteredUsers = getFilteredUsers();
+      if (filteredUsers.length > 0) {
+        // Set the first available user as default owner if no owner is selected
+        const firstUserFullName = getUserFullName(filteredUsers[0]);
+        if (!form.owner || !filteredUsers.find(u => getUserFullName(u) === form.owner)) {
+          setForm(prev => ({
+            ...prev,
+            owner: firstUserFullName
+          }));
+        }
+      }
+    }
+  }, [form.businessUnit, users]);
+
   const fetchUsers = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/users`);
+      const response = await fetch(`${API_BASE_URL}/api/all-users`);
       const data = await response.json();
       setUsers(data.data || []);
       // Set current user as default owner
@@ -191,6 +208,35 @@ const CreateDeal = () => {
       owner: user?.name || ''
     }));
     setStep(2);
+  };
+
+  // Filter users based on selected business unit
+  const getFilteredUsers = () => {
+    if (!form.businessUnit || !users.length) return [];
+    
+    return users.filter(userItem => {
+      // Super admin and admin can always be owners
+      if (userItem.role === 'super_admin' || userItem.role === 'admin') {
+        return true;
+      }
+      
+      // For managers, check if they belong to the selected business unit
+      if (userItem.role === 'manager') {
+        // Check if the manager's business unit matches the selected business unit
+        return userItem.businessUnit === form.businessUnit;
+      }
+      
+      return false;
+    });
+  };
+
+  // Helper function to get user's full name
+  const getUserFullName = (userItem) => {
+    if (userItem.name) {
+      return userItem.name; // If name field exists, use it
+    }
+    // Otherwise construct from firstName and lastName
+    return `${userItem.firstName || ''} ${userItem.lastName || ''}`.trim();
   };
 
   const handleSubmit = async e => {
@@ -406,9 +452,15 @@ const CreateDeal = () => {
               <div className="form-group-row">
                 <label>Owner</label>
                 <select name="owner" value={form.owner} onChange={handleChange}>
-                  {users.map(userItem => (
-                    <option key={userItem._id} value={userItem.name}>{userItem.name}</option>
-                  ))}
+                  <option value="">Select Owner</option>
+                  {getFilteredUsers().map(userItem => {
+                    const fullName = getUserFullName(userItem);
+                    return (
+                      <option key={userItem._id} value={fullName}>
+                        {fullName}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
               
