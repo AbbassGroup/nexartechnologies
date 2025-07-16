@@ -710,32 +710,50 @@
 .contacts-table-wrapper {
   overflow-x: auto;
   width: 100%;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border: 1px solid #e0e4ea;
+  max-height: 350px;
+  overflow-y: auto;
 }
 
 .contacts-table {
   min-width: 1200px;
   border-collapse: collapse;
-  background: #fff;
   width: 100%;
+  font-size: 15px;
 }
 
-.contacts-table thead th {
-  position: sticky;
-  top: 0;
+.contacts-table th, .contacts-table td {
+  padding: 12px 10px;
+  text-align: left;
+  border-bottom: 1px solid #e0e4ea;
+  white-space: nowrap;
+}
+
+.contacts-table th {
   background: #f7f8fa;
-  z-index: 2;
+  font-weight: 600;
+  color: #222;
 }
 
-.contacts-table tbody {
-  display: block;
-  max-height: 350px;
-  overflow-y: auto;
-  width: 100%;
+.contacts-table tbody tr:nth-child(even) {
+  background: #fafbfc;
 }
 
+.contacts-table tbody tr:hover {
+  background: #f0f4fa;
+}
+
+.contacts-table td:last-child, .contacts-table th:last-child {
+  text-align: center;
+}
+/* Remove any display: block/table overrides for thead/tbody/tr */
 .contacts-table thead,
+.contacts-table tbody,
 .contacts-table tbody tr {
-  display: table;
-  width: 100%;
-  table-layout: fixed;
+  
+  width: auto;
+  table-layout: auto;
 } 
