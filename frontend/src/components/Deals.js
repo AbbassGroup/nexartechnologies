@@ -156,9 +156,16 @@ const Deals = () => {
 
     const { source, destination, draggableId } = result;
     
+    console.log('Drag end result:', { source, destination, draggableId });
+    
     // Check if the user has permission to move this deal
     const deal = deals.find(d => d._id === draggableId);
-    if (!deal) return;
+    if (!deal) {
+      console.error('Deal not found for ID:', draggableId);
+      return;
+    }
+
+    console.log('Found deal:', deal);
 
     // Role-based validation for drag and drop
     if (user.role === 'manager') {
@@ -169,34 +176,53 @@ const Deals = () => {
       }
     }
 
+    // Don't update if moving to the same stage
+    if (source.droppableId === destination.droppableId) {
+      console.log('Same stage, no update needed');
+      return;
+    }
+
+    // Optimistic update - update UI immediately
+    setDeals(prevDeals => 
+      prevDeals.map(d => 
+        d._id === draggableId 
+          ? { ...d, stage: destination.droppableId }
+          : d
+      )
+    );
+
     try {
+      console.log('Sending update to backend for deal:', draggableId, 'to stage:', destination.droppableId);
+      
       const response = await fetch(`${API_BASE_URL}/api/deals/${draggableId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          stage: destination.droppableId,
-          sourceStage: source.droppableId,
-          sourceIndex: source.index,
-          destinationIndex: destination.index
+          stage: destination.droppableId
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to update deal stage');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to update deal stage');
+      }
 
-      // Update local state
-      const updatedDeals = Array.from(deals);
-      const [movedDeal] = updatedDeals.splice(source.index, 1);
-      updatedDeals.splice(destination.index, 0, {
-        ...movedDeal,
-        stage: destination.droppableId
-      });
-
-      setDeals(updatedDeals);
+      console.log('Backend update successful');
+      setError(null); // Clear any previous errors
     } catch (error) {
-      setError('Failed to update deal stage');
       console.error('Error updating deal:', error);
+      setError('Failed to update deal stage');
+      
+      // Revert the optimistic update on error
+      setDeals(prevDeals => 
+        prevDeals.map(d => 
+          d._id === draggableId 
+            ? { ...d, stage: source.droppableId }
+            : d
+        )
+      );
     }
   };
 
@@ -555,7 +581,7 @@ const Deals = () => {
                     >
                       {dealsByStage[stage]?.map((deal, index) => (
                         <Draggable
-                          key={deal._id}
+                          key={`${deal._id}-${deal.stage}-${index}`}
                           draggableId={deal._id}
                           index={index}
                           isDragDisabled={user.role === 'manager' && deal.office !== user.office}
