@@ -285,6 +285,8 @@ const Deals = () => {
       owner: deal.owner || '',
       notes: deal.notes || '',
       commission: deal.commission || '',
+      referralPartner: deal.referralPartner || '',
+      campaign: deal.campaign || '',
       businessName: deal.businessName || '',
       typeOfBusiness: deal.typeOfBusiness || '',
       sellingConsideration: deal.sellingConsideration || '',
@@ -588,6 +590,17 @@ const Deals = () => {
                 </div>
               )}
               
+              <div className="edit-form-row">
+                  <div className="edit-form-group">
+                    <label>Referral Partner</label>
+                    <input type="text" name="referralPartner" value={editForm.referralPartner} onChange={handleEditChange} />
+                  </div>
+                  <div className="edit-form-group">
+                    <label>Campaign</label>
+                    <input type="text" name="campaign" value={editForm.campaign} onChange={handleEditChange} />
+                  </div>
+                </div>
+              
               <div className="edit-form-actions">
                 <button type="button" className="cancel-btn" onClick={closeEditModal}>
                   Cancel
@@ -665,6 +678,12 @@ const Deals = () => {
                               <div className="deal-details">
                                 <span className="deal-owner">{deal.owner}</span>
                                 <span className="deal-office">{deal.office}</span>
+                                {deal.referralPartner && (
+                                  <span className="deal-referral">Referral: {deal.referralPartner}</span>
+                                )}
+                                {deal.campaign && (
+                                  <span className="deal-campaign">Campaign: {deal.campaign}</span>
+                                )}
                               </div>
                               {/* Business Name for Business Brokers */}
                               {deal.businessUnit === 'Business Brokers' && deal.businessName && (

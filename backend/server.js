@@ -700,7 +700,8 @@ app.post('/api/deals', authenticateUser, async (req, res) => {
             sellingAgent, agreement, agreementTerms, listingPrice, salesCommission,
             closingDate, probability, expectedRevenue, campaignSource, whenToBuy,
             comments, owner,
-            abbassBusinessUnit, abbassBusinessType
+            abbassBusinessUnit, abbassBusinessType,
+            referralPartner, campaign
         } = req.body;
 
         // Validate required fields based on Deal model
@@ -774,7 +775,9 @@ app.post('/api/deals', authenticateUser, async (req, res) => {
             whenToBuy,
             comments,
             abbassBusinessUnit,
-            abbassBusinessType
+            abbassBusinessType,
+            referralPartner,
+            campaign
         };
 
         console.log('Creating deal with data:', dealData);
@@ -825,7 +828,8 @@ app.put('/api/deals/:id', authenticateUser, async (req, res) => {
             sellingAgent, agreement, agreementTerms, listingPrice, salesCommission,
             closingDate, probability, expectedRevenue, campaignSource, whenToBuy,
             comments, owner,
-            abbassBusinessUnit, abbassBusinessType
+            abbassBusinessUnit, abbassBusinessType,
+            referralPartner, campaign
         } = req.body;
 
         // Find the deal first
@@ -905,7 +909,9 @@ app.put('/api/deals/:id', authenticateUser, async (req, res) => {
             comments: comments !== undefined ? comments : deal.comments,
             owner: owner !== undefined ? owner : deal.owner,
             abbassBusinessUnit: abbassBusinessUnit !== undefined ? abbassBusinessUnit : deal.abbassBusinessUnit,
-            abbassBusinessType: abbassBusinessType !== undefined ? abbassBusinessType : deal.abbassBusinessType
+            abbassBusinessType: abbassBusinessType !== undefined ? abbassBusinessType : deal.abbassBusinessType,
+            referralPartner: referralPartner !== undefined ? referralPartner : deal.referralPartner,
+            campaign: campaign !== undefined ? campaign : deal.campaign
         };
 
         console.log('Updating deal with data:', updateData);

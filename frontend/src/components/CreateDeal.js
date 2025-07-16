@@ -56,6 +56,8 @@ const CreateDeal = () => {
     owner: '',
     notes: '',
     commission: '',
+    referralPartner: '',
+    campaign: '',
     
     // Business Brokers specific fields
     businessName: '',
@@ -278,6 +280,8 @@ const CreateDeal = () => {
         office: form.office || offices[0]?.name || '',
         owner: form.owner || user.name,
         dateCreated: form.dateCreated || new Date().toISOString().split('T')[0],
+        referralPartner: form.referralPartner,
+        campaign: form.campaign,
         ...(form.businessUnit === 'ABBASS Group' ? {
           abbassBusinessUnit: form.abbassBusinessUnit || '',
           abbassBusinessType: form.abbassBusinessType || ''
@@ -503,6 +507,14 @@ const CreateDeal = () => {
               <div className="form-group-row">
                 <label>Commission</label>
                 <input type="text" name="commission" value={form.commission} onChange={handleChange} />
+              </div>
+              <div className="form-group-row">
+                <label>Referral Partner</label>
+                <input type="text" name="referralPartner" value={form.referralPartner} onChange={handleChange} placeholder="Enter referral partner" />
+              </div>
+              <div className="form-group-row">
+                <label>Campaign</label>
+                <input type="text" name="campaign" value={form.campaign} onChange={handleChange} placeholder="Enter campaign" />
               </div>
             </div>
             

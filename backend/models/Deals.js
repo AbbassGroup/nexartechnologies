@@ -12,6 +12,8 @@ const dealSchema = new mongoose.Schema({
   dateCreated: { type: Date, default: Date.now },
   notes: { type: String, trim: true },
   commission: { type: String, trim: true },
+  referralPartner: { type: String, trim: true },
+  campaign: { type: String, trim: true },
   
   // Business Brokers specific fields
   businessName: { type: String, trim: true },
