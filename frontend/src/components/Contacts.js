@@ -44,6 +44,7 @@ const Contacts = () => {
   const [editForm, setEditForm] = useState(null);
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState('');
+  const [showFilterModal, setShowFilterModal] = useState(false);
 
   const SEARCHABLE_FIELDS = [
     'firstName', 'lastName', 'phone', 'email', 'industry',
@@ -316,8 +317,8 @@ const Contacts = () => {
   };
 
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-      <div className="deals-container" style={{ flex: 1 }}>
+    <div style={{ minHeight: 'calc(100vh - 100px)' }}>
+      <div className="deals-container" style={{ width: '100%' }}>
         <div className="deals-header" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <h2>Prospects</h2>
           <div style={{ display: 'flex', gap: '10px' }}>
@@ -350,6 +351,20 @@ const Contacts = () => {
               }}
             >
               Import Excel
+            </button>
+            <button
+              className="filter-btn"
+              onClick={() => setShowFilterModal(true)}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#f7b731',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Filter
             </button>
             <button className="create-contact-btn" onClick={() => navigate('/admin-dashboard/prospects/create')}>
               Create Prospects <span style={{ fontSize: '1.1em', marginLeft: 4 }}>▼</span>
@@ -537,165 +552,169 @@ const Contacts = () => {
             </div>
           </div>
         )}
-      </div>
-      {/* Filter Panel */}
-      <div style={{
-        width: 280,
-        minWidth: 220,
-        background: '#fafbfc',
-        borderLeft: '1.5px solid #e0e4ea',
-        padding: '24px 16px',
-        height: '100vh',
-        position: 'sticky',
-        top: 0,
-        overflowY: 'auto',
-        boxShadow: '0 0 8px 0 rgba(0,0,0,0.03)'
-      }}>
-        <h4 style={{ marginTop: 0, marginBottom: 18, fontWeight: 600 }}>Filter Prospects</h4>
-        {FILTERABLE_FIELDS.map(f => (
-          <div key={f.key} style={{ marginBottom: 18 }}>
-            <label style={{ display: 'flex', alignItems: 'center', fontWeight: 500 }}>
-              <input
-                type="checkbox"
-                checked={!!filters[f.key]?.enabled}
-                onChange={() => handleFilterFieldToggle(f.key)}
-                style={{ marginRight: 8 }}
-              />
-              {f.label}
-            </label>
-            {filters[f.key]?.enabled && (
-              <div style={{ marginLeft: 24, marginTop: 6 }}>
-                <select
-                  value={filters[f.key]?.operator || 'contains'}
-                  onChange={e => handleFilterOperatorChange(f.key, e.target.value)}
-                  style={{ marginRight: 8, padding: '2px 8px', borderRadius: 4, border: '1px solid #e0e4ea' }}
-                >
-                  {FILTER_OPERATORS.map(op => (
-                    <option key={op.value} value={op.value}>{op.label}</option>
-                  ))}
-                </select>
-                <input
-                  type="text"
-                  value={filters[f.key]?.value || ''}
-                  onChange={e => handleFilterValueChange(f.key, e.target.value)}
-                  placeholder="Type here"
-                  style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #e0e4ea', minWidth: 100 }}
-                />
+        {/* Filter Modal */}
+        {showFilterModal && (
+          <div className="edit-modal-overlay">
+            <div className="edit-modal" style={{ minWidth: 350, maxWidth: 400 }}>
+              <div className="edit-modal-header">
+                <h3>Filter Prospects</h3>
+                <button className="close-modal-btn" onClick={() => setShowFilterModal(false)}>×</button>
               </div>
-            )}
-          </div>
-        ))}
-      </div>
-      {/* Delete Confirmation Modal */}
-      {deleteConfirm.show && (
-        <div className="delete-modal-overlay">
-          <div className="delete-modal">
-            <h3>Confirm Delete</h3>
-            <p>Are you sure you want to delete the prospect "{deleteConfirm.contactName}"?</p>
-            <p>This action cannot be undone.</p>
-            <div className="delete-modal-buttons">
-              <button
-                className="delete-confirm-btn"
-                onClick={() => handleDeleteContact(deleteConfirm.contactId)}
-              >
-                Delete
-              </button>
-              <button
-                className="delete-cancel-btn"
-                onClick={() => setDeleteConfirm({ show: false, contactId: null, contactName: '' })}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Edit Prospect Modal */}
-      {editModal.show && (
-        <div className="edit-modal-overlay">
-          <div className="edit-modal">
-            <div className="edit-modal-header">
-              <h3>Edit Prospect</h3>
-              <button className="close-modal-btn" onClick={closeEditModal}>×</button>
-            </div>
-            {editError && <div className="error-message">{editError}</div>}
-            {editLoading || !editForm ? (
-              <div style={{ padding: 24, textAlign: 'center' }}>Loading...</div>
-            ) : (
-              <form onSubmit={handleEditFormSubmit} className="edit-form">
-                <div className="edit-form-section">
-                  <div className="edit-form-row">
-                    <div className="edit-form-group">
-                      <label>First Name *</label>
-                      <input type="text" name="firstName" value={editForm.firstName || ''} onChange={handleEditFormChange} required />
-                    </div>
-                    <div className="edit-form-group">
-                      <label>Last Name *</label>
-                      <input type="text" name="lastName" value={editForm.lastName || ''} onChange={handleEditFormChange} required />
-                    </div>
-                  </div>
-                  <div className="edit-form-row">
-                    <div className="edit-form-group">
-                      <label>Phone *</label>
-                      <input type="text" name="phone" value={editForm.phone || ''} onChange={handleEditFormChange} required />
-                    </div>
-                    <div className="edit-form-group">
-                      <label>Email *</label>
-                      <input type="email" name="email" value={editForm.email || ''} onChange={handleEditFormChange} required />
-                    </div>
-                  </div>
-                  <div className="edit-form-row">
-                    <div className="edit-form-group">
-                      <label>Industry</label>
-                      <input type="text" name="industry" value={editForm.industry || ''} onChange={handleEditFormChange} />
-                    </div>
-                    <div className="edit-form-group">
-                      <label>Business Type</label>
-                      <input type="text" name="businessType" value={editForm.businessType || ''} onChange={handleEditFormChange} />
-                    </div>
-                  </div>
-                  <div className="edit-form-row">
-                    <div className="edit-form-group">
-                      <label>Price Range</label>
-                      <input type="text" name="priceRange" value={editForm.priceRange || ''} onChange={handleEditFormChange} />
-                    </div>
-                    <div className="edit-form-group">
-                      <label>Location</label>
-                      <input type="text" name="location" value={editForm.location || ''} onChange={handleEditFormChange} />
-                    </div>
-                  </div>
-                  <div className="edit-form-row">
-                    <div className="edit-form-group">
-                      <label>City</label>
-                      <input type="text" name="city" value={editForm.city || ''} onChange={handleEditFormChange} />
-                    </div>
-                    <div className="edit-form-group">
-                      <label>CA Signed</label>
-                      <select name="caSigned" value={editForm.caSigned || ''} onChange={handleEditFormChange}>
-                        <option value="">Select</option>
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
+              {FILTERABLE_FIELDS.map(f => (
+                <div key={f.key} style={{ marginBottom: 18 }}>
+                  <label style={{ display: 'flex', alignItems: 'center', fontWeight: 500 }}>
+                    <input
+                      type="checkbox"
+                      checked={!!filters[f.key]?.enabled}
+                      onChange={() => handleFilterFieldToggle(f.key)}
+                      style={{ marginRight: 8 }}
+                    />
+                    {f.label}
+                  </label>
+                  {filters[f.key]?.enabled && (
+                    <div style={{ marginLeft: 24, marginTop: 6 }}>
+                      <select
+                        value={filters[f.key]?.operator || 'contains'}
+                        onChange={e => handleFilterOperatorChange(f.key, e.target.value)}
+                        style={{ marginRight: 8, padding: '2px 8px', borderRadius: 4, border: '1px solid #e0e4ea' }}
+                      >
+                        {FILTER_OPERATORS.map(op => (
+                          <option key={op.value} value={op.value}>{op.label}</option>
+                        ))}
                       </select>
+                      <input
+                        type="text"
+                        value={filters[f.key]?.value || ''}
+                        onChange={e => handleFilterValueChange(f.key, e.target.value)}
+                        placeholder="Type here"
+                        style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #e0e4ea', minWidth: 100 }}
+                      />
                     </div>
-                    <div className="edit-form-group">
-                      <label>Contact Owner</label>
-                      <input type="text" name="contactOwner" value={editForm.contactOwner || ''} onChange={handleEditFormChange} />
+                  )}
+                </div>
+              ))}
+              <div className="edit-form-actions">
+                <button type="button" className="cancel-btn" onClick={() => { setFilters({}); }}>
+                  Reset Filters
+                </button>
+                <button type="button" className="cancel-btn" onClick={() => setShowFilterModal(false)}>
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Delete Confirmation Modal */}
+        {deleteConfirm.show && (
+          <div className="delete-modal-overlay">
+            <div className="delete-modal">
+              <h3>Confirm Delete</h3>
+              <p>Are you sure you want to delete the prospect "{deleteConfirm.contactName}"?</p>
+              <p>This action cannot be undone.</p>
+              <div className="delete-modal-buttons">
+                <button
+                  className="delete-confirm-btn"
+                  onClick={() => handleDeleteContact(deleteConfirm.contactId)}
+                >
+                  Delete
+                </button>
+                <button
+                  className="delete-cancel-btn"
+                  onClick={() => setDeleteConfirm({ show: false, contactId: null, contactName: '' })}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Edit Prospect Modal */}
+        {editModal.show && (
+          <div className="edit-modal-overlay">
+            <div className="edit-modal">
+              <div className="edit-modal-header">
+                <h3>Edit Prospect</h3>
+                <button className="close-modal-btn" onClick={closeEditModal}>×</button>
+              </div>
+              {editError && <div className="error-message">{editError}</div>}
+              {editLoading || !editForm ? (
+                <div style={{ padding: 24, textAlign: 'center' }}>Loading...</div>
+              ) : (
+                <form onSubmit={handleEditFormSubmit} className="edit-form">
+                  <div className="edit-form-section">
+                    <div className="edit-form-row">
+                      <div className="edit-form-group">
+                        <label>First Name *</label>
+                        <input type="text" name="firstName" value={editForm.firstName || ''} onChange={handleEditFormChange} required />
+                      </div>
+                      <div className="edit-form-group">
+                        <label>Last Name *</label>
+                        <input type="text" name="lastName" value={editForm.lastName || ''} onChange={handleEditFormChange} required />
+                      </div>
+                    </div>
+                    <div className="edit-form-row">
+                      <div className="edit-form-group">
+                        <label>Phone *</label>
+                        <input type="text" name="phone" value={editForm.phone || ''} onChange={handleEditFormChange} required />
+                      </div>
+                      <div className="edit-form-group">
+                        <label>Email *</label>
+                        <input type="email" name="email" value={editForm.email || ''} onChange={handleEditFormChange} required />
+                      </div>
+                    </div>
+                    <div className="edit-form-row">
+                      <div className="edit-form-group">
+                        <label>Industry</label>
+                        <input type="text" name="industry" value={editForm.industry || ''} onChange={handleEditFormChange} />
+                      </div>
+                      <div className="edit-form-group">
+                        <label>Business Type</label>
+                        <input type="text" name="businessType" value={editForm.businessType || ''} onChange={handleEditFormChange} />
+                      </div>
+                    </div>
+                    <div className="edit-form-row">
+                      <div className="edit-form-group">
+                        <label>Price Range</label>
+                        <input type="text" name="priceRange" value={editForm.priceRange || ''} onChange={handleEditFormChange} />
+                      </div>
+                      <div className="edit-form-group">
+                        <label>Location</label>
+                        <input type="text" name="location" value={editForm.location || ''} onChange={handleEditFormChange} />
+                      </div>
+                    </div>
+                    <div className="edit-form-row">
+                      <div className="edit-form-group">
+                        <label>City</label>
+                        <input type="text" name="city" value={editForm.city || ''} onChange={handleEditFormChange} />
+                      </div>
+                      <div className="edit-form-group">
+                        <label>CA Signed</label>
+                        <select name="caSigned" value={editForm.caSigned || ''} onChange={handleEditFormChange}>
+                          <option value="">Select</option>
+                          <option value="Yes">Yes</option>
+                          <option value="No">No</option>
+                        </select>
+                      </div>
+                      <div className="edit-form-group">
+                        <label>Contact Owner</label>
+                        <input type="text" name="contactOwner" value={editForm.contactOwner || ''} onChange={handleEditFormChange} />
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="edit-form-actions">
-                  <button type="button" className="cancel-btn" onClick={closeEditModal}>
-                    Cancel
-                  </button>
-                  <button type="submit" className="submit-btn" disabled={editLoading}>
-                    {editLoading ? 'Saving...' : 'Save Changes'}
-                  </button>
-                </div>
-              </form>
-            )}
+                  <div className="edit-form-actions">
+                    <button type="button" className="cancel-btn" onClick={closeEditModal}>
+                      Cancel
+                    </button>
+                    <button type="submit" className="submit-btn" disabled={editLoading}>
+                      {editLoading ? 'Saving...' : 'Save Changes'}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
