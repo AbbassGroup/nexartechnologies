@@ -4,6 +4,7 @@ import '../styles/CreateDeal.css';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
+
 const API_BASE_URL = process.env.REACT_APP_API_URL;
 
 const FILTERABLE_FIELDS = [
@@ -38,6 +39,11 @@ const Contacts = () => {
   const [importResult, setImportResult] = useState(null);
   const [exporting, setExporting] = useState(false);
   const [filters, setFilters] = useState({}); // { field: { operator, value, enabled } }
+  const [deleteConfirm, setDeleteConfirm] = useState({ show: false, contactId: null, contactName: '' });
+  const [editModal, setEditModal] = useState({ show: false, contactId: null });
+  const [editForm, setEditForm] = useState(null);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState('');
 
   const SEARCHABLE_FIELDS = [
     'firstName', 'lastName', 'phone', 'email', 'industry',
@@ -231,6 +237,84 @@ const Contacts = () => {
     }));
   };
 
+  // Delete contact handler
+  const handleDeleteContact = async (contactId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/contacts/${contactId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Failed to delete contact');
+      // Refresh contacts
+      await fetchContacts();
+      setDeleteConfirm({ show: false, contactId: null, contactName: '' });
+    } catch (error) {
+      alert('Failed to delete contact');
+    }
+  };
+
+  // Edit contact handler (navigate to edit page)
+  const handleEditContact = (contactId) => {
+    navigate(`/admin-dashboard/prospects/edit/${contactId}`);
+  };
+
+  // Open edit modal and fetch contact details
+  const openEditModal = async (contactId) => {
+    setEditLoading(true);
+    setEditError('');
+    setEditModal({ show: true, contactId });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/contacts/${contactId}`);
+      const data = await response.json();
+      if (data.success) {
+        setEditForm(data.data);
+      } else {
+        setEditError('Failed to load prospect details');
+      }
+    } catch (error) {
+      setEditError('Failed to load prospect details');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  // Close edit modal
+  const closeEditModal = () => {
+    setEditModal({ show: false, contactId: null });
+    setEditForm(null);
+    setEditError('');
+  };
+
+  // Handle edit form changes
+  const handleEditFormChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Handle edit form submit
+  const handleEditFormSubmit = async (e) => {
+    e.preventDefault();
+    setEditLoading(true);
+    setEditError('');
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/contacts/${editModal.contactId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editForm)
+      });
+      const data = await response.json();
+      if (data.success) {
+        await fetchContacts();
+        closeEditModal();
+      } else {
+        setEditError(data.error || 'Failed to update prospect');
+      }
+    } catch (error) {
+      setEditError('Failed to update prospect');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start' }}>
       <div className="deals-container" style={{ flex: 1 }}>
@@ -298,6 +382,7 @@ const Contacts = () => {
                 <th>Location</th>
                 <th>City</th>
                 <th>Contact Owner</th>
+                {(user.role === 'admin' || user.role === 'super_admin') && <th>Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -317,6 +402,24 @@ const Contacts = () => {
                     <td>{c.location || ''}</td>
                     <td>{c.city || ''}</td>
                     <td>{c.contactOwner || ''}</td>
+                    {(user.role === 'admin' || user.role === 'super_admin') && (
+                      <td>
+                        <button
+                          style={{ marginRight: 8, background: 'none', border: 'none', cursor: 'pointer', color: '#1976d2' }}
+                          title="Edit Prospect"
+                          onClick={() => openEditModal(c._id)}
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#d32f2f' }}
+                          title="Delete Prospect"
+                          onClick={() => setDeleteConfirm({ show: true, contactId: c._id, contactName: `${c.firstName} ${c.lastName}` })}
+                        >
+                          🗑️
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))
               )}
@@ -479,6 +582,108 @@ const Contacts = () => {
           </div>
         ))}
       </div>
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm.show && (
+        <div className="delete-modal-overlay">
+          <div className="delete-modal">
+            <h3>Confirm Delete</h3>
+            <p>Are you sure you want to delete the prospect "{deleteConfirm.contactName}"?</p>
+            <p>This action cannot be undone.</p>
+            <div className="delete-modal-buttons">
+              <button
+                className="delete-confirm-btn"
+                onClick={() => handleDeleteContact(deleteConfirm.contactId)}
+              >
+                Delete
+              </button>
+              <button
+                className="delete-cancel-btn"
+                onClick={() => setDeleteConfirm({ show: false, contactId: null, contactName: '' })}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Edit Prospect Modal */}
+      {editModal.show && (
+        <div className="edit-modal-overlay">
+          <div className="edit-modal">
+            <div className="edit-modal-header">
+              <h3>Edit Prospect</h3>
+              <button className="close-modal-btn" onClick={closeEditModal}>×</button>
+            </div>
+            {editError && <div className="error-message">{editError}</div>}
+            {editLoading || !editForm ? (
+              <div style={{ padding: 24, textAlign: 'center' }}>Loading...</div>
+            ) : (
+              <form onSubmit={handleEditFormSubmit} className="edit-form">
+                <div className="edit-form-section">
+                  <div className="edit-form-row">
+                    <div className="edit-form-group">
+                      <label>First Name *</label>
+                      <input type="text" name="firstName" value={editForm.firstName || ''} onChange={handleEditFormChange} required />
+                    </div>
+                    <div className="edit-form-group">
+                      <label>Last Name *</label>
+                      <input type="text" name="lastName" value={editForm.lastName || ''} onChange={handleEditFormChange} required />
+                    </div>
+                  </div>
+                  <div className="edit-form-row">
+                    <div className="edit-form-group">
+                      <label>Phone *</label>
+                      <input type="text" name="phone" value={editForm.phone || ''} onChange={handleEditFormChange} required />
+                    </div>
+                    <div className="edit-form-group">
+                      <label>Email *</label>
+                      <input type="email" name="email" value={editForm.email || ''} onChange={handleEditFormChange} required />
+                    </div>
+                  </div>
+                  <div className="edit-form-row">
+                    <div className="edit-form-group">
+                      <label>Industry</label>
+                      <input type="text" name="industry" value={editForm.industry || ''} onChange={handleEditFormChange} />
+                    </div>
+                    <div className="edit-form-group">
+                      <label>Business Type</label>
+                      <input type="text" name="businessType" value={editForm.businessType || ''} onChange={handleEditFormChange} />
+                    </div>
+                  </div>
+                  <div className="edit-form-row">
+                    <div className="edit-form-group">
+                      <label>Price Range</label>
+                      <input type="text" name="priceRange" value={editForm.priceRange || ''} onChange={handleEditFormChange} />
+                    </div>
+                    <div className="edit-form-group">
+                      <label>Location</label>
+                      <input type="text" name="location" value={editForm.location || ''} onChange={handleEditFormChange} />
+                    </div>
+                  </div>
+                  <div className="edit-form-row">
+                    <div className="edit-form-group">
+                      <label>City</label>
+                      <input type="text" name="city" value={editForm.city || ''} onChange={handleEditFormChange} />
+                    </div>
+                    <div className="edit-form-group">
+                      <label>Contact Owner</label>
+                      <input type="text" name="contactOwner" value={editForm.contactOwner || ''} onChange={handleEditFormChange} />
+                    </div>
+                  </div>
+                </div>
+                <div className="edit-form-actions">
+                  <button type="button" className="cancel-btn" onClick={closeEditModal}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="submit-btn" disabled={editLoading}>
+                    {editLoading ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
