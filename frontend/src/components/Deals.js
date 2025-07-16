@@ -39,7 +39,11 @@ const Deals = () => {
   const query = useQuery();
   const [businessUnits, setBusinessUnits] = useState([]);
   const [offices, setOffices] = useState([]);
-  const [selectedUnit, setSelectedUnit] = useState('');
+  const [selectedUnit, setSelectedUnit] = useState(() => {
+    // Try to get the saved selection from localStorage
+    const saved = localStorage.getItem('selectedBusinessUnit');
+    return saved || '';
+  });
   const [deals, setDeals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -63,13 +67,17 @@ const Deals = () => {
       const data = await response.json();
       setBusinessUnits(data.data || []);
       
-      // Set default selected unit based on role
+      // Set default selected unit based on role only if no saved selection exists
       if (!selectedUnit && (data.data && data.data.length > 0)) {
+        let defaultUnit = '';
         if (user.role === 'manager' && user.businessUnits && user.businessUnits.length > 0) {
-          setSelectedUnit(user.businessUnits[0]);
+          defaultUnit = user.businessUnits[0];
         } else {
-          setSelectedUnit(data.data[0].name);
+          defaultUnit = data.data[0].name;
         }
+        setSelectedUnit(defaultUnit);
+        // Save the default selection to localStorage
+        localStorage.setItem('selectedBusinessUnit', defaultUnit);
       }
     } catch (error) {
       setBusinessUnits([]);
@@ -356,7 +364,10 @@ const Deals = () => {
   };
 
   const handleBusinessUnitChange = (e) => {
-    setSelectedUnit(e.target.value);
+    const newValue = e.target.value;
+    setSelectedUnit(newValue);
+    // Save the selection to localStorage
+    localStorage.setItem('selectedBusinessUnit', newValue);
   };
 
   if (loading) {
