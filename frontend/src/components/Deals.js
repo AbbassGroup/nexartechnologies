@@ -54,11 +54,13 @@ const Deals = () => {
   const [editError, setEditError] = useState('');
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [users, setUsers] = useState([]);
 
   // Fetch business units and offices on mount
   useEffect(() => {
     fetchBusinessUnits();
     fetchOffices();
+    fetchUsers();
   }, []);
 
   const fetchBusinessUnits = async () => {
@@ -91,6 +93,16 @@ const Deals = () => {
       setOffices(data.data || []);
     } catch (error) {
       setOffices([]);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/all-users`);
+      const data = await response.json();
+      setUsers(data.data || []);
+    } catch (error) {
+      setUsers([]);
     }
   };
 
@@ -295,7 +307,9 @@ const Deals = () => {
       member: deal.member || 'No',
       dateCreated: deal.dateCreated || new Date().toISOString().split('T')[0],
       abbassBusinessUnit: deal.abbassBusinessUnit || '',
-      abbassBusinessType: deal.abbassBusinessType || ''
+      abbassBusinessType: deal.abbassBusinessType || '',
+      listingAgent: deal.listingAgent || '',
+      sellingAgent: deal.sellingAgent || ''
     });
     setEditModal({ show: true, deal });
     setEditError('');
@@ -372,6 +386,15 @@ const Deals = () => {
     setSelectedUnit(newValue);
     // Save the selection to localStorage
     localStorage.setItem('selectedBusinessUnit', newValue);
+  };
+
+  // Helper to get Business Brokers users for agent dropdowns
+  const getBusinessBrokerUsers = () => {
+    return users.filter(userItem => {
+      if (userItem.role === 'super_admin' || userItem.role === 'admin') return true;
+      if (userItem.role === 'manager' && userItem.businessUnit === 'Business Brokers') return true;
+      return false;
+    });
   };
 
   if (loading) {
@@ -544,7 +567,6 @@ const Deals = () => {
               {editModal.deal.businessUnit === 'Business Brokers' && (
                 <div className="edit-form-section">
                   <h4>Business Information</h4>
-                  
                   <div className="edit-form-row">
                     <div className="edit-form-group">
                       <label>Business Name</label>
@@ -555,7 +577,30 @@ const Deals = () => {
                       <input type="text" name="typeOfBusiness" value={editForm.typeOfBusiness} onChange={handleEditChange} />
                     </div>
                   </div>
-                  
+                  <div className="edit-form-row">
+                    <div className="edit-form-group">
+                      <label>Listing Agent</label>
+                      <select name="listingAgent" value={editForm.listingAgent} onChange={handleEditChange} required>
+                        <option value="">Select Listing Agent</option>
+                        {getBusinessBrokerUsers().map(userItem => (
+                          <option key={userItem._id} value={userItem.name || (userItem.firstName + ' ' + userItem.lastName).trim()}>
+                            {userItem.name || (userItem.firstName + ' ' + userItem.lastName).trim()}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="edit-form-group">
+                      <label>Selling Agent</label>
+                      <select name="sellingAgent" value={editForm.sellingAgent} onChange={handleEditChange} required>
+                        <option value="">Select Selling Agent</option>
+                        {getBusinessBrokerUsers().map(userItem => (
+                          <option key={userItem._id} value={userItem.name || (userItem.firstName + ' ' + userItem.lastName).trim()}>
+                            {userItem.name || (userItem.firstName + ' ' + userItem.lastName).trim()}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
                   <div className="edit-form-row">
                     <div className="edit-form-group">
                       <label>Selling Consideration</label>
@@ -566,7 +611,6 @@ const Deals = () => {
                       <input type="text" name="lengthOfOperation" value={editForm.lengthOfOperation} onChange={handleEditChange} />
                     </div>
                   </div>
-                  
                   <div className="edit-form-group full-width">
                     <label>Location</label>
                     <input type="text" name="location" value={editForm.location} onChange={handleEditChange} />
@@ -683,6 +727,12 @@ const Deals = () => {
                                 )}
                                 {deal.campaign && (
                                   <span className="deal-campaign">Campaign: {deal.campaign}</span>
+                                )}
+                                {deal.businessUnit === 'Business Brokers' && deal.listingAgent && (
+                                  <span className="deal-listing-agent">Listing Agent: {deal.listingAgent}</span>
+                                )}
+                                {deal.businessUnit === 'Business Brokers' && deal.sellingAgent && (
+                                  <span className="deal-selling-agent">Selling Agent: {deal.sellingAgent}</span>
                                 )}
                               </div>
                               {/* Business Name for Business Brokers */}

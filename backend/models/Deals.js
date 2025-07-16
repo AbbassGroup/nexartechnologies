@@ -21,6 +21,8 @@ const dealSchema = new mongoose.Schema({
   sellingConsideration: { type: String, trim: true },
   lengthOfOperation: { type: String, trim: true },
   location: { type: String, trim: true },
+  listingAgent: { type: String, trim: true },
+  sellingAgent: { type: String, trim: true },
   
   // Global Properties specific fields
   member: { type: String, enum: ['No', 'Yes', 'Refunded'], default: 'No' },
@@ -34,8 +36,6 @@ const dealSchema = new mongoose.Schema({
   contactName: { type: String, trim: true },
   whereBased: { type: String, trim: true },
   whereToBuy: { type: String, trim: true },
-  listingAgent: { type: String, trim: true },
-  sellingAgent: { type: String, trim: true },
   agreement: { type: String, trim: true },
   agreementTerms: { type: String, trim: true },
   listingPrice: { type: String, trim: true },

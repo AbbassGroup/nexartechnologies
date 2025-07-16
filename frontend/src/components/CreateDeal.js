@@ -65,6 +65,8 @@ const CreateDeal = () => {
     sellingConsideration: '',
     lengthOfOperation: '',
     location: '',
+    listingAgent: '',
+    sellingAgent: '',
     
     // Global Properties specific fields
     member: 'No', // Default to 'No'
@@ -243,6 +245,15 @@ const CreateDeal = () => {
     return `${userItem.firstName || ''} ${userItem.lastName || ''}`.trim();
   };
 
+  // Helper to get Business Brokers users for agent dropdowns
+  const getBusinessBrokerUsers = () => {
+    return users.filter(userItem => {
+      if (userItem.role === 'super_admin' || userItem.role === 'admin') return true;
+      if (userItem.role === 'manager' && userItem.businessUnit === 'Business Brokers') return true;
+      return false;
+    });
+  };
+
   const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
@@ -263,6 +274,12 @@ const CreateDeal = () => {
         if (!form.businessName.trim()) {
           throw new Error('Business name is required for Business Brokers deals');
         }
+        if (!form.listingAgent) {
+          throw new Error('Listing agent is required for Business Brokers deals');
+        }
+        if (!form.sellingAgent) {
+          throw new Error('Selling agent is required for Business Brokers deals');
+        }
       }
       
       if (!user) {
@@ -282,6 +299,8 @@ const CreateDeal = () => {
         dateCreated: form.dateCreated || new Date().toISOString().split('T')[0],
         referralPartner: form.referralPartner,
         campaign: form.campaign,
+        listingAgent: form.listingAgent,
+        sellingAgent: form.sellingAgent,
         ...(form.businessUnit === 'ABBASS Group' ? {
           abbassBusinessUnit: form.abbassBusinessUnit || '',
           abbassBusinessType: form.abbassBusinessType || ''
@@ -522,7 +541,6 @@ const CreateDeal = () => {
             {form.businessUnit === 'Business Brokers' && (
               <div className="form-section">
                 <h3>Business Information</h3>
-                
                 <div className="form-group-row">
                   <label>Business Name *</label>
                   <input 
@@ -534,22 +552,40 @@ const CreateDeal = () => {
                     placeholder="Enter business name"
                   />
                 </div>
-                
+                <div className="form-group-row">
+                  <label>Listing Agent *</label>
+                  <select name="listingAgent" value={form.listingAgent} onChange={handleChange} required>
+                    <option value="">Select Listing Agent</option>
+                    {getBusinessBrokerUsers().map(userItem => (
+                      <option key={userItem._id} value={getUserFullName(userItem)}>
+                        {getUserFullName(userItem)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group-row">
+                  <label>Selling Agent *</label>
+                  <select name="sellingAgent" value={form.sellingAgent} onChange={handleChange} required>
+                    <option value="">Select Selling Agent</option>
+                    {getBusinessBrokerUsers().map(userItem => (
+                      <option key={userItem._id} value={getUserFullName(userItem)}>
+                        {getUserFullName(userItem)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <div className="form-group-row">
                   <label>Type of Business</label>
                   <input type="text" name="typeOfBusiness" value={form.typeOfBusiness} onChange={handleChange} />
                 </div>
-                
                 <div className="form-group-row">
                   <label>Selling Consideration</label>
                   <input type="text" name="sellingConsideration" value={form.sellingConsideration} onChange={handleChange} />
                 </div>
-                
                 <div className="form-group-row">
                   <label>Length of Operation</label>
                   <input type="text" name="lengthOfOperation" value={form.lengthOfOperation} onChange={handleChange} />
                 </div>
-                
                 <div className="form-group-row">
                   <label>Location</label>
                   <input type="text" name="location" value={form.location} onChange={handleChange} />

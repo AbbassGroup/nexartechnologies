@@ -696,12 +696,13 @@ app.post('/api/deals', authenticateUser, async (req, res) => {
             name, stage, businessUnit, office, email, phone, dateCreated, 
             notes, commission, businessName, typeOfBusiness, sellingConsideration,
             lengthOfOperation, location, member, leadStatus, accountName, type,
-            nextStep, leadSource, contactName, whereBased, whereToBuy, listingAgent,
-            sellingAgent, agreement, agreementTerms, listingPrice, salesCommission,
+            nextStep, leadSource, contactName, whereBased, whereToBuy, 
+            agreement, agreementTerms, listingPrice, salesCommission,
             closingDate, probability, expectedRevenue, campaignSource, whenToBuy,
             comments, owner,
             abbassBusinessUnit, abbassBusinessType,
-            referralPartner, campaign
+            referralPartner, campaign,
+            listingAgent, sellingAgent
         } = req.body;
 
         // Validate required fields based on Deal model
@@ -824,12 +825,13 @@ app.put('/api/deals/:id', authenticateUser, async (req, res) => {
             name, stage, businessUnit, office, email, phone, dateCreated, 
             notes, commission, businessName, typeOfBusiness, sellingConsideration,
             lengthOfOperation, location, member, leadStatus, accountName, type,
-            nextStep, leadSource, contactName, whereBased, whereToBuy, listingAgent,
-            sellingAgent, agreement, agreementTerms, listingPrice, salesCommission,
+            nextStep, leadSource, contactName, whereBased, whereToBuy, 
+            agreement, agreementTerms, listingPrice, salesCommission,
             closingDate, probability, expectedRevenue, campaignSource, whenToBuy,
             comments, owner,
             abbassBusinessUnit, abbassBusinessType,
-            referralPartner, campaign
+            referralPartner, campaign,
+            listingAgent, sellingAgent
         } = req.body;
 
         // Find the deal first
