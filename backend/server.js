@@ -984,7 +984,7 @@ app.delete('/api/deals/:id', authenticateUser, async (req, res) => {
 });
 
 // ----------- CONTACTS ROUTES -----------
-app.post('/api/contacts', async (req, res) => {
+app.post('/api/contacts', authenticateUser, async (req, res) => {
     try {
         const {
             firstName,
@@ -1024,7 +1024,7 @@ app.post('/api/contacts', async (req, res) => {
     }
 });
 
-app.get('/api/contacts', async (req, res) => {
+app.get('/api/contacts', authenticateUser, async (req, res) => {
     try {
         const contacts = await Contact.find();
         res.json({ success: true, data: contacts });
@@ -1032,53 +1032,10 @@ app.get('/api/contacts', async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
-
-// Get a contact by ID
-app.get('/api/contacts/:id', async (req, res) => {
-  try {
-    const contact = await Contact.findById(req.params.id);
-    if (!contact) {
-      return res.status(404).json({ success: false, error: 'Contact not found' });
-    }
-    res.json({ success: true, data: contact });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// Update a contact by ID
-app.put('/api/contacts/:id', async (req, res) => {
-  try {
-    const updateData = { ...req.body };
-    // Only allow caSigned to be updated if present
-    if (typeof req.body.caSigned === 'undefined') delete updateData.caSigned;
-    const updated = await Contact.findByIdAndUpdate(req.params.id, updateData, { new: true });
-    if (!updated) {
-      return res.status(404).json({ success: false, error: 'Contact not found' });
-    }
-    res.json({ success: true, message: 'Contact updated successfully', data: updated });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// Delete a contact by ID
-app.delete('/api/contacts/:id', async (req, res) => {
-  try {
-    const deleted = await Contact.findByIdAndDelete(req.params.id);
-    if (!deleted) {
-      return res.status(404).json({ success: false, error: 'Contact not found' });
-    }
-    res.json({ success: true, message: 'Contact deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// Export contacts to Excel
-app.get('/api/contacts/export', async (req, res) => {
+app.get('/api/contacts/export', authenticateUser, async (req, res) => {
     try {
         const contacts = await Contact.find();
+        const XLSX = require('xlsx');
         
         // Prepare data for Excel
         const excelData = contacts.map(contact => ({
@@ -1112,6 +1069,7 @@ app.get('/api/contacts/export', async (req, res) => {
             { wch: 15 }, // Price Range
             { wch: 15 }, // Location
             { wch: 15 }, // City
+            { wch: 15 }, // CA Signed
             { wch: 15 }, // Contact Owner
             { wch: 15 }, // Created At
             { wch: 15 }  // Updated At
@@ -1131,13 +1089,65 @@ app.get('/api/contacts/export', async (req, res) => {
 
         res.send(excelBuffer);
     } catch (error) {
-        console.error('Error exporting contacts:', error);
-        res.status(500).json({ success: false, error: 'Error exporting contacts' });
+        console.error('🔥 Error exporting contacts:', error);
+    console.error('🔥 Stack trace:', error.stack);
+    res.status(500).json({
+        success: false,
+        error: error.message || 'Unknown error exporting contacts',
+    });
     }
 });
 
+// Get a contact by ID
+app.get('/api/contacts/:id', async (req, res) => {
+  try {
+    const contact = await Contact.findById(req.params.id);
+    if (!contact) {
+      return res.status(404).json({ success: false, error: 'Contact not found' });
+    }
+    res.json({ success: true, data: contact });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+
+
+// Update a contact by ID
+app.put('/api/contacts/:id', authenticateUser, async (req, res) => {
+  try {
+    const updateData = { ...req.body };
+    // Only allow caSigned to be updated if present
+    if (typeof req.body.caSigned === 'undefined') delete updateData.caSigned;
+    const updated = await Contact.findByIdAndUpdate(req.params.id, updateData, { new: true });
+    if (!updated) {
+      return res.status(404).json({ success: false, error: 'Contact not found' });
+    }
+    res.json({ success: true, message: 'Contact updated successfully', data: updated });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Delete a contact by ID
+app.delete('/api/contacts/:id', authenticateUser, async (req, res) => {
+  try {
+    const deleted = await Contact.findByIdAndDelete(req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ success: false, error: 'Contact not found' });
+    }
+    res.json({ success: true, message: 'Contact deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+//Export contacts to Excel
+
+
+
 // Import contacts from Excel
-app.post('/api/contacts/import', upload.single('file'), async (req, res) => {
+app.post('/api/contacts/import', authenticateUser, upload.single('file'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ success: false, error: 'No file uploaded' });
