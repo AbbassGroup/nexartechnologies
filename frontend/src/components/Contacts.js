@@ -375,7 +375,7 @@ const Contacts = () => {
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
           <input
             type="text"
-            placeholder="Search by name..."
+            placeholder="Search"
             value={search}
             onChange={e => setSearch(e.target.value)}
             style={{ padding: '10px 16px', borderRadius: 8, border: '1.5px solid #e0e4ea', minWidth: 240 }}

@@ -50,6 +50,8 @@ const Deals = () => {
     return saved || '';
   });
   const [deals, setDeals] = useState([]);
+  const [filteredDeals, setFilteredDeals] = useState([]);
+  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, dealId: null, dealName: '' });
@@ -61,6 +63,16 @@ const Deals = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [users, setUsers] = useState([]);
+
+  const SEARCHABLE_FIELDS = [
+    'name', 'email', 'phone', 'stage', 'office', 'owner', 'notes', 'commission',
+    'referralPartner', 'campaign', 'businessName', 'typeOfBusiness', 'sellingConsideration',
+    'lengthOfOperation', 'location', 'member', 'leadStatus', 'accountName', 'type',
+    'nextStep', 'leadSource', 'contactName', 'whereBased', 'whereToBuy', 'agreement',
+    'agreementTerms', 'listingPrice', 'salesCommission', 'closingDate', 'probability',
+    'expectedRevenue', 'campaignSource', 'whenToBuy', 'comments', 'abbassBusinessUnit',
+    'abbassBusinessType', 'listingAgent', 'sellingAgent'
+  ];
 
   // Fetch business units and offices on mount
   useEffect(() => {
@@ -144,6 +156,7 @@ const Deals = () => {
       }
       
       setDeals(filteredDeals);
+      setFilteredDeals(filteredDeals);
     } catch (error) {
       setError('Failed to load deals');
       console.error('Error fetching deals:', error);
@@ -156,11 +169,28 @@ const Deals = () => {
     fetchDeals();
   }, [selectedUnit, selectedOwner, user.role]);
 
+  useEffect(() => {
+    if (!search) {
+      setFilteredDeals(deals);
+    } else {
+      const lower = search.toLowerCase();
+      setFilteredDeals(
+        deals.filter(deal =>
+          SEARCHABLE_FIELDS.some(
+            field =>
+              deal[field] &&
+              deal[field].toString().toLowerCase().includes(lower)
+          )
+        )
+      );
+    }
+  }, [search, deals]);
+
   // Group deals by stage
   const dealsByStage = (user.role === 'manager' 
     ? PIPELINES[user.businessUnits[0]] 
     : PIPELINES[selectedUnit])?.reduce((acc, stage) => {
-      acc[stage] = deals.filter(deal => deal.stage === stage);
+      acc[stage] = filteredDeals.filter(deal => deal.stage === stage);
       return acc;
     }, {}) || {};
 
@@ -609,6 +639,16 @@ const Deals = () => {
       </div>
 
       {error && <div className="error-message">{error}</div>}
+
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+        <input
+          type="text"
+          placeholder="Search"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ padding: '10px 16px', borderRadius: 8, border: '1.5px solid #e0e4ea', minWidth: 240 }}
+        />
+      </div>
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm.show && (
