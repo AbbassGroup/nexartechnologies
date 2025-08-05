@@ -44,6 +44,11 @@ const Deals = () => {
     const saved = localStorage.getItem('selectedBusinessUnit');
     return saved || '';
   });
+  const [selectedOwner, setSelectedOwner] = useState(() => {
+    // Try to get the saved owner selection from localStorage
+    const saved = localStorage.getItem('selectedOwner');
+    return saved || '';
+  });
   const [deals, setDeals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -132,6 +137,11 @@ const Deals = () => {
         filteredDeals = filteredDeals.filter(deal => deal.businessUnit === selectedUnit);
       }
       
+      // Filter by owner if selected
+      if (selectedOwner) {
+        filteredDeals = filteredDeals.filter(deal => deal.owner === selectedOwner);
+      }
+      
       setDeals(filteredDeals);
     } catch (error) {
       setError('Failed to load deals');
@@ -143,7 +153,7 @@ const Deals = () => {
 
   useEffect(() => {
     fetchDeals();
-  }, [selectedUnit, user.role]);
+  }, [selectedUnit, selectedOwner, user.role]);
 
   // Group deals by stage
   const dealsByStage = (user.role === 'manager' 
@@ -388,6 +398,13 @@ const Deals = () => {
     localStorage.setItem('selectedBusinessUnit', newValue);
   };
 
+  const handleOwnerChange = (e) => {
+    const newValue = e.target.value;
+    setSelectedOwner(newValue);
+    // Save the selection to localStorage
+    localStorage.setItem('selectedOwner', newValue);
+  };
+
   // Helper to get Business Brokers users for agent dropdowns
   const getBusinessBrokerUsers = () => {
     return users.filter(userItem => {
@@ -395,6 +412,17 @@ const Deals = () => {
       if (userItem.role === 'manager' && userItem.businessUnit === 'Business Brokers') return true;
       return false;
     });
+  };
+
+  // Helper to get unique owners from deals
+  const getUniqueOwners = () => {
+    const owners = new Set();
+    deals.forEach(deal => {
+      if (deal.owner) {
+        owners.add(deal.owner);
+      }
+    });
+    return Array.from(owners).sort();
   };
 
   if (loading) {
@@ -420,6 +448,16 @@ const Deals = () => {
                   <option key={unit._id} value={unit.name}>{unit.name}</option>
                 ))
             }
+          </select>
+          <select 
+            value={selectedOwner} 
+            onChange={handleOwnerChange}
+            className="filter-select"
+          >
+            <option value="">All Owners</option>
+            {getUniqueOwners().map(owner => (
+              <option key={owner} value={owner}>{owner}</option>
+            ))}
           </select>
           <button 
             className="create-deal-btn"

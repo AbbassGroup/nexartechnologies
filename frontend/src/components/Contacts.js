@@ -383,23 +383,28 @@ const Contacts = () => {
         </div>
         
         {/* Table wrapper and table start */}
-        <div className="contacts-table-wrapper">
-          <table className="contacts-table">
-            <thead>
+        <div className="contacts-table-wrapper" style={{ 
+          maxHeight: 'calc(100vh - 200px)', 
+          overflowY: 'auto',
+          border: '1px solid #e0e4ea',
+          borderRadius: '8px'
+        }}>
+          <table className="contacts-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
               <tr style={{ background: '#f7f8fa' }}>
-                <th style={{ width: 40 }}><input type="checkbox" disabled /></th>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Phone</th>
-                <th>Email</th>
-                <th>Industry</th>
-                <th>Business Type</th>
-                <th>Price Range</th>
-                <th>Location</th>
-                <th>City</th>
-                <th>CA Signed</th>
-                <th>Contact Owner</th>
-                {(user.role === 'admin' || user.role === 'super_admin') && <th>Actions</th>}
+                <th style={{ width: 40, padding: '12px 8px', borderBottom: '2px solid #e0e4ea', textAlign: 'left' }}><input type="checkbox" disabled /></th>
+                <th style={{ padding: '12px 8px', borderBottom: '2px solid #e0e4ea', textAlign: 'left' }}>First Name</th>
+                <th style={{ padding: '12px 8px', borderBottom: '2px solid #e0e4ea', textAlign: 'left' }}>Last Name</th>
+                <th style={{ padding: '12px 8px', borderBottom: '2px solid #e0e4ea', textAlign: 'left' }}>Phone</th>
+                <th style={{ padding: '12px 8px', borderBottom: '2px solid #e0e4ea', textAlign: 'left' }}>Email</th>
+                <th style={{ padding: '12px 8px', borderBottom: '2px solid #e0e4ea', textAlign: 'left' }}>Industry</th>
+                <th style={{ padding: '12px 8px', borderBottom: '2px solid #e0e4ea', textAlign: 'left' }}>Business Type</th>
+                <th style={{ padding: '12px 8px', borderBottom: '2px solid #e0e4ea', textAlign: 'left' }}>Price Range</th>
+                <th style={{ padding: '12px 8px', borderBottom: '2px solid #e0e4ea', textAlign: 'left' }}>Location</th>
+                <th style={{ padding: '12px 8px', borderBottom: '2px solid #e0e4ea', textAlign: 'left' }}>City</th>
+                <th style={{ padding: '12px 8px', borderBottom: '2px solid #e0e4ea', textAlign: 'left' }}>CA Signed</th>
+                <th style={{ padding: '12px 8px', borderBottom: '2px solid #e0e4ea', textAlign: 'left' }}>Contact Owner</th>
+                {(user.role === 'admin' || user.role === 'super_admin') && <th style={{ padding: '12px 8px', borderBottom: '2px solid #e0e4ea', textAlign: 'left' }}>Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -407,21 +412,24 @@ const Contacts = () => {
                 <tr><td colSpan={12} style={{ textAlign: 'center', padding: 32, color: '#888' }}>No contacts found.</td></tr>
               ) : (
                 filteredContacts.map((c, idx) => (
-                  <tr key={c._id || idx} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                    <td><input type="checkbox" /></td>
-                    <td>{c.firstName}</td>
-                    <td>{c.lastName}</td>
-                    <td>{c.phone}</td>
-                    <td>{c.email}</td>
-                    <td>{c.industry || ''}</td>
-                    <td>{c.businessType || ''}</td>
-                    <td>{c.priceRange || ''}</td>
-                    <td>{c.location || ''}</td>
-                    <td>{c.city || ''}</td>
-                    <td>{c.caSigned || ''}</td>
-                    <td>{c.contactOwner || ''}</td>
+                  <tr key={c._id || idx} style={{ 
+                    borderBottom: '1px solid #f0f0f0',
+                    backgroundColor: idx % 2 === 0 ? '#ffffff' : '#fafafa'
+                  }}>
+                    <td style={{ padding: '12px 8px' }}><input type="checkbox" /></td>
+                    <td style={{ padding: '12px 8px' }}>{c.firstName}</td>
+                    <td style={{ padding: '12px 8px' }}>{c.lastName}</td>
+                    <td style={{ padding: '12px 8px' }}>{c.phone}</td>
+                    <td style={{ padding: '12px 8px' }}>{c.email}</td>
+                    <td style={{ padding: '12px 8px' }}>{c.industry || ''}</td>
+                    <td style={{ padding: '12px 8px' }}>{c.businessType || ''}</td>
+                    <td style={{ padding: '12px 8px' }}>{c.priceRange || ''}</td>
+                    <td style={{ padding: '12px 8px' }}>{c.location || ''}</td>
+                    <td style={{ padding: '12px 8px' }}>{c.city || ''}</td>
+                    <td style={{ padding: '12px 8px' }}>{c.caSigned || ''}</td>
+                    <td style={{ padding: '12px 8px' }}>{c.contactOwner || ''}</td>
                     {(user.role === 'admin' || user.role === 'super_admin') && (
-                      <td>
+                      <td style={{ padding: '12px 8px' }}>
                         <button
                           style={{ marginRight: 8, background: 'none', border: 'none', cursor: 'pointer', color: '#1976d2' }}
                           title="Edit Prospect"

@@ -274,12 +274,6 @@ const CreateDeal = () => {
         if (!form.businessName.trim()) {
           throw new Error('Business name is required for Business Brokers deals');
         }
-        if (!form.listingAgent) {
-          throw new Error('Listing agent is required for Business Brokers deals');
-        }
-        if (!form.sellingAgent) {
-          throw new Error('Selling agent is required for Business Brokers deals');
-        }
       }
       
       if (!user) {
@@ -553,8 +547,8 @@ const CreateDeal = () => {
                   />
                 </div>
                 <div className="form-group-row">
-                  <label>Listing Agent *</label>
-                  <select name="listingAgent" value={form.listingAgent} onChange={handleChange} required>
+                  <label>Listing Agent</label>
+                  <select name="listingAgent" value={form.listingAgent} onChange={handleChange}>
                     <option value="">Select Listing Agent</option>
                     {getBusinessBrokerUsers().map(userItem => (
                       <option key={userItem._id} value={getUserFullName(userItem)}>
@@ -564,8 +558,8 @@ const CreateDeal = () => {
                   </select>
                 </div>
                 <div className="form-group-row">
-                  <label>Selling Agent *</label>
-                  <select name="sellingAgent" value={form.sellingAgent} onChange={handleChange} required>
+                  <label>Selling Agent</label>
+                  <select name="sellingAgent" value={form.sellingAgent} onChange={handleChange}>
                     <option value="">Select Selling Agent</option>
                     {getBusinessBrokerUsers().map(userItem => (
                       <option key={userItem._id} value={getUserFullName(userItem)}>
