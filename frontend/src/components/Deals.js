@@ -57,6 +57,7 @@ const Deals = () => {
   const [editForm, setEditForm] = useState({});
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState('');
+  const [exporting, setExporting] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
   const [users, setUsers] = useState([]);
@@ -425,6 +426,128 @@ const Deals = () => {
     return Array.from(owners).sort();
   };
 
+  // Handle export functionality
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      // Prepare the data for export
+      const exportData = deals.map(deal => ({
+        'Deal Name': deal.name || '',
+        'Stage': deal.stage || '',
+        'Business Unit': deal.businessUnit || '',
+        'Office': deal.office || '',
+        'Owner': deal.owner || '',
+        'Email': deal.email || '',
+        'Phone': deal.phone || '',
+        'Date Created': deal.dateCreated ? new Date(deal.dateCreated).toLocaleDateString() : '',
+        'Notes': deal.notes || '',
+        'Commission': deal.commission || '',
+        'Referral Partner': deal.referralPartner || '',
+        'Campaign': deal.campaign || '',
+        'Business Name': deal.businessName || '',
+        'Type of Business': deal.typeOfBusiness || '',
+        'Selling Consideration': deal.sellingConsideration || '',
+        'Length of Operation': deal.lengthOfOperation || '',
+        'Location': deal.location || '',
+        'Listing Agent': deal.listingAgent || '',
+        'Selling Agent': deal.sellingAgent || '',
+        'Member': deal.member || '',
+        'Lead Status': deal.leadStatus || '',
+        'Account Name': deal.accountName || '',
+        'Type': deal.type || '',
+        'Next Step': deal.nextStep || '',
+        'Lead Source': deal.leadSource || '',
+        'Contact Name': deal.contactName || '',
+        'Where Based': deal.whereBased || '',
+        'Where To Buy': deal.whereToBuy || '',
+        'Agreement': deal.agreement || '',
+        'Agreement Terms': deal.agreementTerms || '',
+        'Listing Price': deal.listingPrice || '',
+        'Sales Commission': deal.salesCommission || '',
+        'Closing Date': deal.closingDate || '',
+        'Probability': deal.probability || '',
+        'Expected Revenue': deal.expectedRevenue || '',
+        'Campaign Source': deal.campaignSource || '',
+        'When To Buy': deal.whenToBuy || '',
+        'Comments': deal.comments || '',
+        'ABBASS Business Unit': deal.abbassBusinessUnit || '',
+        'ABBASS Business Type': deal.abbassBusinessType || ''
+      }));
+
+      // Create workbook and worksheet
+      const XLSX = require('xlsx');
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+      // Set column widths
+      const columnWidths = [
+        { wch: 20 }, // Deal Name
+        { wch: 15 }, // Stage
+        { wch: 15 }, // Business Unit
+        { wch: 15 }, // Office
+        { wch: 15 }, // Owner
+        { wch: 25 }, // Email
+        { wch: 15 }, // Phone
+        { wch: 15 }, // Date Created
+        { wch: 30 }, // Notes
+        { wch: 15 }, // Commission
+        { wch: 20 }, // Referral Partner
+        { wch: 15 }, // Campaign
+        { wch: 20 }, // Business Name
+        { wch: 20 }, // Type of Business
+        { wch: 20 }, // Selling Consideration
+        { wch: 20 }, // Length of Operation
+        { wch: 15 }, // Location
+        { wch: 15 }, // Listing Agent
+        { wch: 15 }, // Selling Agent
+        { wch: 10 }, // Member
+        { wch: 15 }, // Lead Status
+        { wch: 15 }, // Account Name
+        { wch: 15 }, // Type
+        { wch: 15 }, // Next Step
+        { wch: 15 }, // Lead Source
+        { wch: 15 }, // Contact Name
+        { wch: 15 }, // Where Based
+        { wch: 15 }, // Where To Buy
+        { wch: 15 }, // Agreement
+        { wch: 20 }, // Agreement Terms
+        { wch: 15 }, // Listing Price
+        { wch: 15 }, // Sales Commission
+        { wch: 15 }, // Closing Date
+        { wch: 10 }, // Probability
+        { wch: 15 }, // Expected Revenue
+        { wch: 15 }, // Campaign Source
+        { wch: 15 }, // When To Buy
+        { wch: 30 }, // Comments
+        { wch: 20 }, // ABBASS Business Unit
+        { wch: 20 }  // ABBASS Business Type
+      ];
+      worksheet['!cols'] = columnWidths;
+
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Deals');
+
+      // Generate buffer
+      const excelBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
+      // Create download link
+      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `deals_${selectedUnit || 'all'}_${selectedOwner || 'all'}_${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Export error:', error);
+      alert('Error exporting deals');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   if (loading) {
     return <div className="deals-loading">Loading deals...</div>;
   }
@@ -459,6 +582,23 @@ const Deals = () => {
               <option key={owner} value={owner}>{owner}</option>
             ))}
           </select>
+          <button 
+            className="export-btn"
+            onClick={handleExport}
+            disabled={exporting}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#28a745',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: exporting ? 'not-allowed' : 'pointer',
+              opacity: exporting ? 0.6 : 1,
+              marginRight: '10px'
+            }}
+          >
+            {exporting ? 'Exporting...' : 'Export Excel'}
+          </button>
           <button 
             className="create-deal-btn"
             onClick={() => navigate('/deals/create')}
