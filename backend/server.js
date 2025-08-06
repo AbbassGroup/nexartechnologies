@@ -1098,50 +1098,6 @@ app.get('/api/contacts/export', authenticateUser, async (req, res) => {
     }
 });
 
-// Get a contact by ID
-app.get('/api/contacts/:id', async (req, res) => {
-  try {
-    const contact = await Contact.findById(req.params.id);
-    if (!contact) {
-      return res.status(404).json({ success: false, error: 'Contact not found' });
-    }
-    res.json({ success: true, data: contact });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-
-
-// Update a contact by ID
-app.put('/api/contacts/:id', authenticateUser, async (req, res) => {
-  try {
-    const updateData = { ...req.body };
-    // Only allow caSigned to be updated if present
-    if (typeof req.body.caSigned === 'undefined') delete updateData.caSigned;
-    const updated = await Contact.findByIdAndUpdate(req.params.id, updateData, { new: true });
-    if (!updated) {
-      return res.status(404).json({ success: false, error: 'Contact not found' });
-    }
-    res.json({ success: true, message: 'Contact updated successfully', data: updated });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// Delete a contact by ID
-app.delete('/api/contacts/:id', authenticateUser, async (req, res) => {
-  try {
-    const deleted = await Contact.findByIdAndDelete(req.params.id);
-    if (!deleted) {
-      return res.status(404).json({ success: false, error: 'Contact not found' });
-    }
-    res.json({ success: true, message: 'Contact deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
 // Bulk delete contacts
 app.delete('/api/contacts/bulk-delete', authenticateUser, async (req, res) => {
   try {
@@ -1188,6 +1144,48 @@ app.delete('/api/contacts/bulk-delete', authenticateUser, async (req, res) => {
       error: 'Error deleting contacts',
       details: error.message 
     });
+  }
+});
+
+// Get a contact by ID
+app.get('/api/contacts/:id', async (req, res) => {
+  try {
+    const contact = await Contact.findById(req.params.id);
+    if (!contact) {
+      return res.status(404).json({ success: false, error: 'Contact not found' });
+    }
+    res.json({ success: true, data: contact });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Update a contact by ID
+app.put('/api/contacts/:id', authenticateUser, async (req, res) => {
+  try {
+    const updateData = { ...req.body };
+    // Only allow caSigned to be updated if present
+    if (typeof req.body.caSigned === 'undefined') delete updateData.caSigned;
+    const updated = await Contact.findByIdAndUpdate(req.params.id, updateData, { new: true });
+    if (!updated) {
+      return res.status(404).json({ success: false, error: 'Contact not found' });
+    }
+    res.json({ success: true, message: 'Contact updated successfully', data: updated });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Delete a contact by ID
+app.delete('/api/contacts/:id', authenticateUser, async (req, res) => {
+  try {
+    const deleted = await Contact.findByIdAndDelete(req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ success: false, error: 'Contact not found' });
+    }
+    res.json({ success: true, message: 'Contact deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
