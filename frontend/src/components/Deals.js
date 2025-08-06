@@ -136,7 +136,16 @@ const Deals = () => {
         url = `${API_BASE_URL}/api/deals`;
       }
       
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': user.id,
+          'x-user-name': user.name,
+          'x-user-role': user.role,
+          'x-user-business-units': JSON.stringify(user.businessUnits || []),
+          'x-user-office': user.office || ''
+        }
+      });
       const data = await response.json();
       let filteredDeals = Array.isArray(data.data) ? data.data : [];
       
@@ -155,8 +164,12 @@ const Deals = () => {
         filteredDeals = filteredDeals.filter(deal => deal.owner === selectedOwner);
       }
       
+      // Update both deals and filteredDeals to ensure consistency
       setDeals(filteredDeals);
       setFilteredDeals(filteredDeals);
+      
+      // Clear any previous errors when deals are successfully loaded
+      setError(null);
     } catch (error) {
       setError('Failed to load deals');
       console.error('Error fetching deals:', error);
@@ -167,6 +180,29 @@ const Deals = () => {
 
   useEffect(() => {
     fetchDeals();
+  }, [selectedUnit, selectedOwner, user.role]);
+
+  // Add event listeners to refresh deals when user returns to the page
+  useEffect(() => {
+    const handleFocus = () => {
+      // Refresh deals when the window regains focus (user returns to the page)
+      fetchDeals();
+    };
+
+    const handleVisibilityChange = () => {
+      // Refresh deals when the page becomes visible again
+      if (!document.hidden) {
+        fetchDeals();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [selectedUnit, selectedOwner, user.role]);
 
   useEffect(() => {
@@ -186,11 +222,17 @@ const Deals = () => {
     }
   }, [search, deals]);
 
-  // Group deals by stage
+  // Group deals by stage and sort by last modified time (newest first)
   const dealsByStage = (user.role === 'manager' 
     ? PIPELINES[user.businessUnits[0]] 
     : PIPELINES[selectedUnit])?.reduce((acc, stage) => {
-      acc[stage] = filteredDeals.filter(deal => deal.stage === stage);
+      const stageDeals = filteredDeals.filter(deal => deal.stage === stage);
+      // Sort deals by lastModifiedAt (newest first), then by createdAt as fallback
+      acc[stage] = stageDeals.sort((a, b) => {
+        const aTime = a.lastModifiedAt ? new Date(a.lastModifiedAt) : new Date(a.createdAt || a.dateCreated);
+        const bTime = b.lastModifiedAt ? new Date(b.lastModifiedAt) : new Date(b.createdAt || b.dateCreated);
+        return bTime - aTime; // Newest first
+      });
       return acc;
     }, {}) || {};
 
@@ -251,6 +293,15 @@ const Deals = () => {
           : d
       )
     );
+    
+    // Also update filteredDeals to maintain consistency
+    setFilteredDeals(prevFiltered => 
+      prevFiltered.map(d => 
+        d._id === draggableId 
+          ? { ...d, stage: destination.droppableId }
+          : d
+      )
+    );
 
     try {
       console.log('Sending update to backend for deal:', draggableId, 'to stage:', destination.droppableId);
@@ -259,6 +310,11 @@ const Deals = () => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'x-user-id': user.id,
+          'x-user-name': user.name,
+          'x-user-role': user.role,
+          'x-user-business-units': JSON.stringify(user.businessUnits || []),
+          'x-user-office': user.office || ''
         },
         body: JSON.stringify({
           stage: destination.droppableId
@@ -270,7 +326,28 @@ const Deals = () => {
         throw new Error(errorData.message || 'Failed to update deal stage');
       }
 
-      console.log('Backend update successful');
+      const result = await response.json();
+      console.log('Backend update successful:', result);
+      
+      // Update local state with the server response data to ensure consistency
+      if (result.success && result.data) {
+        setDeals(prevDeals => 
+          prevDeals.map(d => 
+            d._id === draggableId 
+              ? { ...d, ...result.data }
+              : d
+          )
+        );
+        
+        setFilteredDeals(prevFiltered => 
+          prevFiltered.map(d => 
+            d._id === draggableId 
+              ? { ...d, ...result.data }
+              : d
+          )
+        );
+      }
+      
       setError(null); // Clear any previous errors
     } catch (error) {
       console.error('Error updating deal:', error);
@@ -279,6 +356,15 @@ const Deals = () => {
       // Revert the optimistic update on error
       setDeals(prevDeals => 
         prevDeals.map(d => 
+          d._id === draggableId 
+            ? { ...d, stage: source.droppableId }
+            : d
+        )
+      );
+      
+      // Also revert filteredDeals
+      setFilteredDeals(prevFiltered => 
+        prevFiltered.map(d => 
           d._id === draggableId 
             ? { ...d, stage: source.droppableId }
             : d
@@ -296,7 +382,12 @@ const Deals = () => {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-        },
+          'x-user-id': user.id,
+          'x-user-name': user.name,
+          'x-user-role': user.role,
+          'x-user-business-units': JSON.stringify(user.businessUnits || []),
+          'x-user-office': user.office || ''
+        }
       });
 
       if (!response.ok) throw new Error('Failed to delete deal');
@@ -394,6 +485,11 @@ const Deals = () => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'x-user-id': user.id,
+          'x-user-name': user.name,
+          'x-user-role': user.role,
+          'x-user-business-units': JSON.stringify(user.businessUnits || []),
+          'x-user-office': user.office || ''
         },
         body: JSON.stringify(editForm),
       });
@@ -405,12 +501,37 @@ const Deals = () => {
 
       const updatedDeal = await response.json();
       
-      // Update local state
-      setDeals(prevDeals => 
-        prevDeals.map(deal => 
-          deal._id === editModal.deal._id ? { ...deal, ...editForm } : deal
-        )
-      );
+      // Update local state with the actual server response data
+      if (updatedDeal.success && updatedDeal.data) {
+        const updatedDealData = updatedDeal.data;
+        setDeals(prevDeals => 
+          prevDeals.map(deal => 
+            deal._id === editModal.deal._id ? updatedDealData : deal
+          )
+        );
+        
+        // Also update filteredDeals to maintain consistency
+        setFilteredDeals(prevFiltered => 
+          prevFiltered.map(deal => 
+            deal._id === editModal.deal._id ? updatedDealData : deal
+          )
+        );
+      } else {
+        // Fallback to form data if server response doesn't include the full deal
+        const updatedDealData = { ...editModal.deal, ...editForm };
+        setDeals(prevDeals => 
+          prevDeals.map(deal => 
+            deal._id === editModal.deal._id ? updatedDealData : deal
+          )
+        );
+        
+        // Also update filteredDeals
+        setFilteredDeals(prevFiltered => 
+          prevFiltered.map(deal => 
+            deal._id === editModal.deal._id ? updatedDealData : deal
+          )
+        );
+      }
 
       closeEditModal();
       setError(null);
@@ -953,16 +1074,29 @@ const Deals = () => {
                                   <span className="deal-selling-agent">Selling Agent: {deal.sellingAgent}</span>
                                 )}
                               </div>
-                              {/* Business Name for Business Brokers */}
-                              {deal.businessUnit === 'Business Brokers' && deal.businessName && (
-                                <div className="deal-business-name">
-                                  <span className="business-name-label">Business:</span>
-                                  <span className="business-name-value">{deal.businessName}</span>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </Draggable>
+                                                             {/* Business Name for Business Brokers */}
+                               {deal.businessUnit === 'Business Brokers' && deal.businessName && (
+                                 <div className="deal-business-name">
+                                   <span className="business-name-label">Business:</span>
+                                   <span className="business-name-value">{deal.businessName}</span>
+                                 </div>
+                               )}
+                               
+                               {/* Last Modified Information */}
+                               {deal.lastModifiedBy && (
+                                 <div className="deal-last-modified">
+                                   <span className="last-modified-label">Last modified by:</span>
+                                   <span className="last-modified-value">{deal.lastModifiedBy}</span>
+                                   {deal.lastModifiedAt && (
+                                     <span className="last-modified-time">
+                                       {new Date(deal.lastModifiedAt).toLocaleDateString()}
+                                     </span>
+                                   )}
+                                 </div>
+                               )}
+                             </div>
+                           )}
+                         </Draggable>
                       ))}
                       {provided.placeholder}
                     </div>

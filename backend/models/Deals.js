@@ -50,6 +50,10 @@ const dealSchema = new mongoose.Schema({
   // ABBASS Group specific fields
   abbassBusinessUnit: { type: String, trim: true },
   abbassBusinessType: { type: String, trim: true },
+  
+  // Tracking fields
+  lastModifiedBy: { type: String, trim: true },
+  lastModifiedAt: { type: Date, default: Date.now },
 }, {
   timestamps: true,
   collection: 'deals'

@@ -667,7 +667,7 @@ app.get('/api/deals', authenticateUser, async (req, res) => {
 
         console.log('MongoDB query:', query);
         
-        const deals = await Deal.find(query);
+        const deals = await Deal.find(query).sort({ lastModifiedAt: -1, createdAt: -1 });
         console.log('Deals found:', deals.length);
         console.log('Deals:', deals);
         
@@ -913,7 +913,10 @@ app.put('/api/deals/:id', authenticateUser, async (req, res) => {
             abbassBusinessUnit: abbassBusinessUnit !== undefined ? abbassBusinessUnit : deal.abbassBusinessUnit,
             abbassBusinessType: abbassBusinessType !== undefined ? abbassBusinessType : deal.abbassBusinessType,
             referralPartner: referralPartner !== undefined ? referralPartner : deal.referralPartner,
-            campaign: campaign !== undefined ? campaign : deal.campaign
+            campaign: campaign !== undefined ? campaign : deal.campaign,
+            // Track who modified the deal
+            lastModifiedBy: req.user.name || `${req.user.firstName} ${req.user.lastName}`.trim(),
+            lastModifiedAt: new Date()
         };
 
         console.log('Updating deal with data:', updateData);

@@ -268,6 +268,34 @@
   color: #666;
 }
 
+/* Last Modified Information Styles */
+.deal-last-modified {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #f0f0f0;
+  font-size: 0.8rem;
+  color: #666;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.last-modified-label {
+  font-weight: 500;
+  color: #555;
+}
+
+.last-modified-value {
+  font-weight: 600;
+  color: #1976d2;
+}
+
+.last-modified-time {
+  font-size: 0.75rem;
+  color: #888;
+  font-style: italic;
+}
+
 .deals-loading {
   display: flex;
   justify-content: center;
