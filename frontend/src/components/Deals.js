@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import '../styles/Deals.css';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { useNavigate } from 'react-router-dom';
@@ -207,34 +207,38 @@ const Deals = () => {
 
   useEffect(() => {
     if (!search) {
+      // Maintain the sorted order from the backend by not re-sorting
       setFilteredDeals(deals);
     } else {
       const lower = search.toLowerCase();
-      setFilteredDeals(
-        deals.filter(deal =>
-          SEARCHABLE_FIELDS.some(
-            field =>
-              deal[field] &&
-              deal[field].toString().toLowerCase().includes(lower)
-          )
+      const filtered = deals.filter(deal =>
+        SEARCHABLE_FIELDS.some(
+          field =>
+            deal[field] &&
+            deal[field].toString().toLowerCase().includes(lower)
         )
       );
-    }
-  }, [search, deals]);
-
-  // Group deals by stage and sort by last modified time (newest first)
-  const dealsByStage = (user.role === 'manager' 
-    ? PIPELINES[user.businessUnits[0]] 
-    : PIPELINES[selectedUnit])?.reduce((acc, stage) => {
-      const stageDeals = filteredDeals.filter(deal => deal.stage === stage);
-      // Sort deals by lastModifiedAt (newest first), then by createdAt as fallback
-      acc[stage] = stageDeals.sort((a, b) => {
+      // Sort the filtered results by lastModifiedAt to maintain order
+      const sorted = filtered.sort((a, b) => {
         const aTime = a.lastModifiedAt ? new Date(a.lastModifiedAt) : new Date(a.createdAt || a.dateCreated);
         const bTime = b.lastModifiedAt ? new Date(b.lastModifiedAt) : new Date(b.createdAt || b.dateCreated);
         return bTime - aTime; // Newest first
       });
-      return acc;
-    }, {}) || {};
+      setFilteredDeals(sorted);
+    }
+  }, [search, deals]);
+
+  // Group deals by stage (already sorted by lastModifiedAt from backend and search filtering)
+  const dealsByStage = useMemo(() => {
+    return (user.role === 'manager' 
+      ? PIPELINES[user.businessUnits[0]] 
+      : PIPELINES[selectedUnit])?.reduce((acc, stage) => {
+        const stageDeals = filteredDeals.filter(deal => deal.stage === stage);
+        // Deals are already sorted by lastModifiedAt from backend and search filtering
+        acc[stage] = stageDeals;
+        return acc;
+      }, {}) || {};
+  }, [filteredDeals, user.role, user.businessUnits, selectedUnit]);
 
   // Check if user can edit a specific deal
   const canEditDeal = (deal) => {
