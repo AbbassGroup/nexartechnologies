@@ -1142,6 +1142,55 @@ app.delete('/api/contacts/:id', authenticateUser, async (req, res) => {
   }
 });
 
+// Bulk delete contacts
+app.delete('/api/contacts/bulk-delete', authenticateUser, async (req, res) => {
+  try {
+    const { contactIds } = req.body;
+    
+    if (!contactIds || !Array.isArray(contactIds) || contactIds.length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Contact IDs array is required' 
+      });
+    }
+
+    // Validate that all IDs are valid MongoDB ObjectIds
+    const validIds = contactIds.filter(id => {
+      return id && typeof id === 'string' && id.match(/^[0-9a-fA-F]{24}$/);
+    });
+
+    if (validIds.length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'No valid contact IDs provided' 
+      });
+    }
+
+    // Delete all contacts with the provided IDs
+    const result = await Contact.deleteMany({ _id: { $in: validIds } });
+    
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'No contacts found to delete' 
+      });
+    }
+
+    res.json({ 
+      success: true, 
+      message: `Successfully deleted ${result.deletedCount} contact(s)`,
+      deletedCount: result.deletedCount
+    });
+  } catch (error) {
+    console.error('Bulk delete error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Error deleting contacts',
+      details: error.message 
+    });
+  }
+});
+
 //Export contacts to Excel
 
 

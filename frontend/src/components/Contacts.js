@@ -45,6 +45,9 @@ const Contacts = () => {
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState('');
   const [showFilterModal, setShowFilterModal] = useState(false);
+  const [selectedContacts, setSelectedContacts] = useState([]);
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  const [bulkDeleteLoading, setBulkDeleteLoading] = useState(false);
 
   const SEARCHABLE_FIELDS = [
     'firstName', 'lastName', 'phone', 'email', 'industry',
@@ -316,6 +319,57 @@ const Contacts = () => {
     }
   };
 
+  // Bulk selection handlers
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedContacts(filteredContacts.map(contact => contact._id));
+    } else {
+      setSelectedContacts([]);
+    }
+  };
+
+  const handleSelectContact = (contactId) => {
+    setSelectedContacts(prev => {
+      if (prev.includes(contactId)) {
+        return prev.filter(id => id !== contactId);
+      } else {
+        return [...prev, contactId];
+      }
+    });
+  };
+
+  // Bulk delete handler
+  const handleBulkDelete = async () => {
+    if (selectedContacts.length === 0) {
+      alert('Please select contacts to delete');
+      return;
+    }
+
+    setBulkDeleteLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/contacts/bulk-delete`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contactIds: selectedContacts })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        await fetchContacts();
+        setSelectedContacts([]);
+        setShowBulkDeleteModal(false);
+        alert(`Successfully deleted ${selectedContacts.length} contact(s)`);
+      } else {
+        alert(data.error || 'Failed to delete contacts');
+      }
+    } catch (error) {
+      console.error('Bulk delete error:', error);
+      alert('Error deleting contacts');
+    } finally {
+      setBulkDeleteLoading(false);
+    }
+  };
+
   return (
     <div style={{ minHeight: 'calc(100vh - 100px)' }}>
       <div className="deals-container" style={{ width: '100%' }}>
@@ -366,6 +420,22 @@ const Contacts = () => {
             >
               Filter
             </button>
+            {selectedContacts.length > 0 && user.role === 'super_admin' && (
+              <button
+                className="bulk-delete-btn"
+                onClick={() => setShowBulkDeleteModal(true)}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Delete Selected ({selectedContacts.length})
+              </button>
+            )}
             <button className="create-contact-btn" onClick={() => navigate('/admin-dashboard/prospects/create')}>
               Create Prospects <span style={{ fontSize: '1.1em', marginLeft: 4 }}>▼</span>
             </button>
@@ -392,7 +462,13 @@ const Contacts = () => {
           <table className="contacts-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
               <tr style={{ background: '#f7f8fa' }}>
-                <th style={{ width: 40, padding: '12px 8px', borderBottom: '2px solid #e0e4ea', textAlign: 'left' }}><input type="checkbox" disabled /></th>
+                <th style={{ width: 40, padding: '12px 8px', borderBottom: '2px solid #e0e4ea', textAlign: 'left' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={filteredContacts.length > 0 && selectedContacts.length === filteredContacts.length}
+                    onChange={handleSelectAll}
+                  />
+                </th>
                 <th style={{ padding: '12px 8px', borderBottom: '2px solid #e0e4ea', textAlign: 'left' }}>First Name</th>
                 <th style={{ padding: '12px 8px', borderBottom: '2px solid #e0e4ea', textAlign: 'left' }}>Last Name</th>
                 <th style={{ padding: '12px 8px', borderBottom: '2px solid #e0e4ea', textAlign: 'left' }}>Phone</th>
@@ -416,7 +492,13 @@ const Contacts = () => {
                     borderBottom: '1px solid #f0f0f0',
                     backgroundColor: idx % 2 === 0 ? '#ffffff' : '#fafafa'
                   }}>
-                    <td style={{ padding: '12px 8px' }}><input type="checkbox" /></td>
+                    <td style={{ padding: '12px 8px' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={selectedContacts.includes(c._id)}
+                        onChange={() => handleSelectContact(c._id)}
+                      />
+                    </td>
                     <td style={{ padding: '12px 8px' }}>{c.firstName}</td>
                     <td style={{ padding: '12px 8px' }}>{c.lastName}</td>
                     <td style={{ padding: '12px 8px' }}>{c.phone}</td>
@@ -719,6 +801,37 @@ const Contacts = () => {
                   </div>
                 </form>
               )}
+            </div>
+          </div>
+        )}
+        {/* Bulk Delete Confirmation Modal */}
+        {showBulkDeleteModal && (
+          <div className="delete-modal-overlay">
+            <div className="delete-modal">
+              <h3>Confirm Bulk Delete</h3>
+              <p>Are you sure you want to delete {selectedContacts.length} selected prospect(s)?</p>
+              <p>This action cannot be undone.</p>
+              <div className="delete-modal-buttons">
+                <button
+                  className="delete-confirm-btn"
+                  onClick={handleBulkDelete}
+                  disabled={bulkDeleteLoading}
+                  style={{
+                    backgroundColor: bulkDeleteLoading ? '#6c757d' : '#dc3545',
+                    opacity: bulkDeleteLoading ? 0.6 : 1,
+                    cursor: bulkDeleteLoading ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  {bulkDeleteLoading ? 'Deleting...' : 'Delete Selected'}
+                </button>
+                <button
+                  className="delete-cancel-btn"
+                  onClick={() => setShowBulkDeleteModal(false)}
+                  disabled={bulkDeleteLoading}
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         )}
