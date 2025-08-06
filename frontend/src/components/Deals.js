@@ -1062,29 +1062,12 @@ const Deals = () => {
                                   )}
                                 </div>
                               </div>
-                              <div className="deal-details">
-                                <span className="deal-owner">{deal.owner}</span>
-                                <span className="deal-office">{deal.office}</span>
-                                {deal.referralPartner && (
-                                  <span className="deal-referral">Referral: {deal.referralPartner}</span>
-                                )}
-                                {deal.campaign && (
-                                  <span className="deal-campaign">Campaign: {deal.campaign}</span>
-                                )}
-                                {deal.businessUnit === 'Business Brokers' && deal.listingAgent && (
-                                  <span className="deal-listing-agent">Listing Agent: {deal.listingAgent}</span>
-                                )}
-                                {deal.businessUnit === 'Business Brokers' && deal.sellingAgent && (
-                                  <span className="deal-selling-agent">Selling Agent: {deal.sellingAgent}</span>
-                                )}
-                              </div>
-                                                             {/* Business Name for Business Brokers */}
-                               {deal.businessUnit === 'Business Brokers' && deal.businessName && (
-                                 <div className="deal-business-name">
-                                   <span className="business-name-label">Business:</span>
-                                   <span className="business-name-value">{deal.businessName}</span>
-                                 </div>
-                               )}
+                                                             <div className="deal-details">
+                                 <span className="deal-owner">{deal.owner}</span>
+                                 {deal.businessName && (
+                                   <span className="deal-business-name">Business: {deal.businessName}</span>
+                                 )}
+                               </div>
                                
                                {/* Last Modified Information */}
                                {deal.lastModifiedBy && (
