@@ -17,7 +17,8 @@ dotenv.config();
 const app = express();
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI, { dbName: 'CRM' })
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/CRM';
+mongoose.connect(MONGODB_URI, { dbName: 'CRM' })
     .then(() => console.log('MongoDB connected successfully'))
     .catch((err) => console.error('MongoDB connection error:', err));
 
@@ -737,6 +738,16 @@ app.post('/api/deals', authenticateUser, async (req, res) => {
             }
         }
 
+        // Handle notes - convert string to note object if provided
+        let notesArray = [];
+        if (notes && notes.trim()) {
+            notesArray = [{
+                content: notes.trim(),
+                author: req.user.name || `${req.user.firstName} ${req.user.lastName}`.trim(),
+                createdAt: new Date()
+            }];
+        }
+
         // Create the deal with all fields
         const dealData = {
             name,
@@ -747,7 +758,7 @@ app.post('/api/deals', authenticateUser, async (req, res) => {
             email,
             phone,
             dateCreated: dateCreated ? new Date(dateCreated) : new Date(),
-            notes,
+            notes: notesArray,
             commission,
             businessName,
             typeOfBusiness,
@@ -872,6 +883,22 @@ app.put('/api/deals/:id', authenticateUser, async (req, res) => {
             }
         }
 
+        // Handle notes - append new note if provided
+        let updatedNotes = deal.notes || [];
+        if (notes && notes.trim()) {
+            // Check if this is a new note (different from the last one)
+            const lastNote = updatedNotes[updatedNotes.length - 1];
+            const isNewNote = !lastNote || lastNote.content !== notes.trim();
+            
+            if (isNewNote) {
+                updatedNotes.push({
+                    content: notes.trim(),
+                    author: req.user.name || `${req.user.firstName} ${req.user.lastName}`.trim(),
+                    createdAt: new Date()
+                });
+            }
+        }
+
         // Update the deal with all fields
         const updateData = {
             name: name !== undefined ? name : deal.name,
@@ -881,7 +908,7 @@ app.put('/api/deals/:id', authenticateUser, async (req, res) => {
             email: email !== undefined ? email : deal.email,
             phone: phone !== undefined ? phone : deal.phone,
             dateCreated: dateCreated ? new Date(dateCreated) : deal.dateCreated,
-            notes: notes !== undefined ? notes : deal.notes,
+            notes: updatedNotes,
             commission: commission !== undefined ? commission : deal.commission,
             businessName: businessName !== undefined ? businessName : deal.businessName,
             typeOfBusiness: typeOfBusiness !== undefined ? typeOfBusiness : deal.typeOfBusiness,

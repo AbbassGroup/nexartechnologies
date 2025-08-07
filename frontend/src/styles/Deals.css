@@ -784,4 +784,66 @@
   
   width: auto;
   table-layout: auto;
+}
+
+/* Notes History Styles */
+.notes-history {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #e0e4ea;
+  border-radius: 6px;
+  background: #f8f9fa;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.note-item {
+  background: white;
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 8px;
+  border-left: 3px solid #1976d2;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.note-item:last-child {
+  margin-bottom: 0;
+}
+
+.note-content {
+  color: #333;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin-bottom: 8px;
+  white-space: pre-wrap;
+}
+
+.note-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #666;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 6px;
+}
+
+.note-author {
+  font-weight: 600;
+  color: #1976d2;
+}
+
+.note-date {
+  color: #888;
+  font-style: italic;
+}
+
+.no-notes {
+  color: #888;
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+  background: #f8f9fa;
+  border: 1px dashed #e0e4ea;
+  border-radius: 6px;
 } 

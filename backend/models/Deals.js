@@ -1,5 +1,11 @@
 const mongoose = require('mongoose');
 
+const noteSchema = new mongoose.Schema({
+  content: { type: String, required: true, trim: true },
+  author: { type: String, required: true, trim: true },
+  createdAt: { type: Date, default: Date.now }
+});
+
 const dealSchema = new mongoose.Schema({
   // Common fields for all business units
   name: { type: String, required: true, trim: true },
@@ -10,7 +16,7 @@ const dealSchema = new mongoose.Schema({
   email: { type: String, trim: true },
   phone: { type: String, trim: true },
   dateCreated: { type: Date, default: Date.now },
-  notes: { type: String, trim: true },
+  notes: [noteSchema], // Changed from String to array of note objects
   commission: { type: String, trim: true },
   referralPartner: { type: String, trim: true },
   campaign: { type: String, trim: true },

@@ -33,7 +33,7 @@ const PIPELINES = {
   ]
 };
 
-const API_BASE_URL = process.env.REACT_APP_API_URL;
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
 const Deals = () => {
   const query = useQuery();
@@ -212,11 +212,14 @@ const Deals = () => {
     } else {
       const lower = search.toLowerCase();
       const filtered = deals.filter(deal =>
-        SEARCHABLE_FIELDS.some(
-          field =>
-            deal[field] &&
-            deal[field].toString().toLowerCase().includes(lower)
-        )
+        SEARCHABLE_FIELDS.some(field => {
+          if (field === 'notes') {
+            // Search through notes array content
+            return deal.notes && Array.isArray(deal.notes) && 
+              deal.notes.some(note => note.content && note.content.toLowerCase().includes(lower));
+          }
+          return deal[field] && deal[field].toString().toLowerCase().includes(lower);
+        })
       );
       // Sort the filtered results by lastModifiedAt to maintain order
       const sorted = filtered.sort((a, b) => {
@@ -431,7 +434,7 @@ const Deals = () => {
       stage: deal.stage || '',
       office: deal.office || '',
       owner: deal.owner || '',
-      notes: deal.notes || '',
+      notes: '', // Initialize as empty string for new note
       commission: deal.commission || '',
       referralPartner: deal.referralPartner || '',
       campaign: deal.campaign || '',
@@ -503,11 +506,11 @@ const Deals = () => {
         throw new Error(errorData.message || 'Failed to update deal');
       }
 
-      const updatedDeal = await response.json();
+      const responseData = await response.json();
       
       // Update local state with the actual server response data
-      if (updatedDeal.success && updatedDeal.data) {
-        const updatedDealData = updatedDeal.data;
+      if (responseData.success && responseData.data) {
+        const updatedDealData = responseData.data;
         setDeals(prevDeals => 
           prevDeals.map(deal => 
             deal._id === editModal.deal._id ? updatedDealData : deal
@@ -595,7 +598,9 @@ const Deals = () => {
         'Email': deal.email || '',
         'Phone': deal.phone || '',
         'Date Created': deal.dateCreated ? new Date(deal.dateCreated).toLocaleDateString() : '',
-        'Notes': deal.notes || '',
+        'Notes': deal.notes && Array.isArray(deal.notes) 
+          ? deal.notes.map(note => `${note.content} (${note.author} - ${new Date(note.createdAt).toLocaleDateString()})`).join('; ')
+          : deal.notes || '',
         'Commission': deal.commission || '',
         'Referral Partner': deal.referralPartner || '',
         'Campaign': deal.campaign || '',
@@ -901,8 +906,27 @@ const Deals = () => {
                 </div>
                 
                 <div className="edit-form-group full-width">
-                  <label>Notes</label>
-                  <textarea name="notes" value={editForm.notes} onChange={handleEditChange} rows="3" />
+                  <label>Notes History</label>
+                  {editModal.deal.notes && Array.isArray(editModal.deal.notes) && editModal.deal.notes.length > 0 ? (
+                    <div className="notes-history">
+                      {editModal.deal.notes.map((note, index) => (
+                        <div key={index} className="note-item">
+                          <div className="note-content">{note.content}</div>
+                          <div className="note-meta">
+                            <span className="note-author">{note.author}</span>
+                            <span className="note-date">{new Date(note.createdAt).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="no-notes">No notes yet</div>
+                  )}
+                </div>
+                
+                <div className="edit-form-group full-width">
+                  <label>Add New Note</label>
+                  <textarea name="notes" value={editForm.notes} onChange={handleEditChange} rows="3" placeholder="Enter new note..." />
                 </div>
               </div>
               
