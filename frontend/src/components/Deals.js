@@ -599,7 +599,7 @@ const Deals = () => {
         'Phone': deal.phone || '',
         'Date Created': deal.dateCreated ? new Date(deal.dateCreated).toLocaleDateString() : '',
         'Notes': deal.notes && Array.isArray(deal.notes) 
-          ? deal.notes.map(note => `${note.content} (${note.author} - ${new Date(note.createdAt).toLocaleDateString()})`).join('; ')
+          ? deal.notes.map(note => `${note.content} (${note.author} - ${new Date(note.createdAt).toLocaleString()})`).join('; ')
           : deal.notes || '',
         'Commission': deal.commission || '',
         'Referral Partner': deal.referralPartner || '',
@@ -914,7 +914,7 @@ const Deals = () => {
                           <div className="note-content">{note.content}</div>
                           <div className="note-meta">
                             <span className="note-author">{note.author}</span>
-                            <span className="note-date">{new Date(note.createdAt).toLocaleDateString()}</span>
+                            <span className="note-date">{new Date(note.createdAt).toLocaleString()}</span>
                           </div>
                         </div>
                       ))}
