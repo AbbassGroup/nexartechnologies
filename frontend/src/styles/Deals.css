@@ -270,30 +270,73 @@
 
 /* Last Modified Information Styles */
 .deal-last-modified {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid #f0f0f0;
-  font-size: 0.8rem;
-  color: #666;
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.75rem;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.deal-last-modified:hover {
+  background: linear-gradient(135deg, #f1f3f4 0%, #e8eaed 100%);
+  border-color: #d1d5db;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.last-modified-icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  margin-top: 1px;
+}
+
+.last-modified-content {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
+.last-modified-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
 .last-modified-label {
   font-weight: 500;
-  color: #555;
+  color: #6b7280;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .last-modified-value {
   font-weight: 600;
-  color: #1976d2;
+  color: #1f2937;
+  font-size: 0.75rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .last-modified-time {
-  font-size: 0.75rem;
-  color: #888;
-  font-style: italic;
+  font-size: 0.65rem;
+  color: #9ca3af;
+  font-weight: 400;
+  margin-top: 1px;
 }
 
 .deals-loading {

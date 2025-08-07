@@ -1096,13 +1096,22 @@ const Deals = () => {
                                {/* Last Modified Information */}
                                {deal.lastModifiedBy && (
                                  <div className="deal-last-modified">
-                                   <span className="last-modified-label">Last modified by:</span>
-                                   <span className="last-modified-value">{deal.lastModifiedBy}</span>
-                                   {deal.lastModifiedAt && (
-                                     <span className="last-modified-time">
-                                       {new Date(deal.lastModifiedAt).toLocaleDateString()}
-                                     </span>
-                                   )}
+                                   <div className="last-modified-icon">
+                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/>
+                                     </svg>
+                                   </div>
+                                   <div className="last-modified-content">
+                                     <div className="last-modified-header">
+                                       <span className="last-modified-label">Last modified by</span>
+                                       <span className="last-modified-value">{deal.lastModifiedBy}</span>
+                                     </div>
+                                     {deal.lastModifiedAt && (
+                                       <div className="last-modified-time">
+                                         {new Date(deal.lastModifiedAt).toLocaleString()}
+                                       </div>
+                                     )}
+                                   </div>
                                  </div>
                                )}
                              </div>
