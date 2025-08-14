@@ -23,7 +23,7 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   }
 
   if (!user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/crm/login" replace />;
   }
 
   if (requiredRole && !hasPermission(requiredRole)) {
@@ -42,7 +42,7 @@ const ProtectedProspectsRoute = ({ children }) => {
   }
 
   if (!user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/crm/login" replace />;
   }
 
   // Check if user can access Prospects
@@ -75,7 +75,7 @@ function App() {
       <Router>
         <div className="App">
           <Routes>
-            <Route path="/" element={<Login />} />
+            <Route path="/crm/login" element={<Login />} />
             <Route path="/admin-dashboard" element={
               <ProtectedRoute>
                 <AdminLayout />
@@ -105,7 +105,7 @@ function App() {
                 </ProtectedRoute>
               } />
             </Route>
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<Navigate to="/crm/login" replace />} />
             <Route path="/deals/create" element={<CreateDeal />} />
             <Route path="/forget-password" element={<ForgetPassword />} />
           </Routes>
