@@ -9,7 +9,7 @@ const AdminLayout = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate('/crm/login');
   };
 
   // Check if user can access Prospects
